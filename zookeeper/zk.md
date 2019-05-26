@@ -4,7 +4,7 @@
 ZooKeeper分布式协调服务
 ![](assets/ec176ca4.png)
 
-ZooKeeper数据模型
+ZooKeeper数据模型  
 ![](assets/079c0df3.png)
 
 ### ZooKeeper安装
@@ -92,10 +92,11 @@ UvJWhBril5yzpEiA2eV7bwwhfLs=
 #### ZAB 协议 & Paxos 算法
 #### Zookeeper数据存储
 https://blog.csdn.net/varyall/article/details/79564418  
+https://www.cnblogs.com/leesf456/p/6179118.html
 
-配置dataLogDir，那么Zookeeper在运行过程中会在该目录下建立一个名字为version-2的子目录，该目录确定了当前Zookeeper使用的事务日志格式版本号，当下次某个Zookeeper版本对事务日志格式进行变更时，此目录也会变更，即在version-2子目录下会生成一系列文件大小一致(64MB)的文件。指定dataDir为/home/admin/zkData/zk_data，则在运行过程中会在该目录下创建version-2的目录，该目录确定了当前Zookeeper使用的快照数据格式版本号
+配置dataLogDir，那么Zookeeper在运行过程中会在该目录下建立一个名字为version-2的子目录，该目录确定了当前Zookeeper使用的事务日志格式版本号，当下次某个Zookeeper版本对事务日志格式进行变更时，此目录也会变更，即在version-2子目录下会生成一系列文件大小一致(64MB)的文件。指定dataDir为/home/admin/zkData/zk_data，则在运行过程中会在该目录下创建version-2的目录，该目录确定了当前Zookeeper使用的快照数据格式版本号  
+
 ![](assets/d771055a.png)
-
 
 1. 数据分类  
 * 内存数据
