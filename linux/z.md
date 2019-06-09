@@ -91,11 +91,15 @@ mount -a //修改完/tc/fstab后执行
 1.RAID 0 (不含校验与冗余的条状存储)  
 至少要2个硬盘，一个文件写入RAID 0分成两部分DATA1和DATA2写入
 ![](assets/a76118a7.png)
+
 2.RAID 1 (不含校验的镜像存储)  
 写入一个文件会同时复制到另一个硬盘做备份，利用率只有50% 
 ![](assets/1dee7d0b.png)
-6.RAID 5 
+
+6.RAID 5
+ 
 ![](assets/ccd007ed.png)
+
 11.RAID 10
 RAID1+0   
 RAID0+1
@@ -259,6 +263,21 @@ firewall-cmd --add-interface=eno166 --zone=public
 firewall-cmd --remove-interface=eno166 --zone=public  
 firewall-cmd --list-all --zone=public  
 firewall-cmd --permanent --add-port=3306/tcp --zone=public
+
+tcpdump  
+第一种是关于类型的关键字，主要包括host，net，port  
+第二种是确定传输方向的关键字，主要包括src , dst ,dst or src, dst and src  
+第三种是协议的关键字，主要包括fddi,ip,arp,rarp,tcp,udp等类型  
+tcpdump -i eth0 -nnA 'port 80 and src host 192.168.1.231'  
+tcpdump -i eth0 -nn 'src host 192.168.1.231'  
+这样只有192.168.1.231这台主机发送的包才会被抓取  
+tcpdump -i eth0 -nn 'dst host 192.168.1.231'  
+这样只有192.168.1.231这台主机接收到的包才会被抓取  
+监听指定端口  
+tcpdump -i eth0 -nnA 'port 80'   
+如果想要获取主机210.27.48.1接收或发出的telnet包   
+tcpdump tcp port 23 and host 210.27.48.1  
+
 
 
  
