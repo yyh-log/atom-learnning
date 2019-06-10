@@ -28,7 +28,11 @@ vim小技巧
 * rm -r删除多级目录内容 -f强制删除不提示
 * cat -n 显示行号
 * grpe -i忽略大小写 -v去反匹配
-* ln -s source 创建软连接，源文件不可删除 ln [选项] 目标 链接名
+* ln -s source 创建软连接，源文件不可删除 ln [选项] 目标 链接名  
+* cat /etc/redhat-release 查看CentOS版本
+* cat /proc/version
+* uname -a  
+* hostnamectl statsu
 
 #### 账户与安全
 * useradd -u -g 
