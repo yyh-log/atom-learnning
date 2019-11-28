@@ -165,4 +165,4 @@ curl -i -X DELETE "http://<host>:<port>/webhdfs/v1/<path>?op=DELETE[&recursive=<
 查看文件信息  
 curl -i  "http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=GETFILESTATUS"    
 
-                              
+hadoop dfsadmin refreshNodes                      
