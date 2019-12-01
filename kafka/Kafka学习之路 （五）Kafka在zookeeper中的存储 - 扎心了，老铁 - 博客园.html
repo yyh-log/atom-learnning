@@ -1,0 +1,648 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="origin" />
+    <meta property="og:description" content="一、Kafka在zookeeper中存储结构图 二、分析 2.1&#x3000;topic注册信息 /brokers/topics/[topic] : 存储某个topic的partitions所有分配信息 2.2&#x3000;" />
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Kafka学习之路 （五）Kafka在zookeeper中的存储 - 扎心了，老铁 - 博客园</title>
+    
+    <link rel="stylesheet" href="/css/blog-common.min.css?v=PyyhYDRKBG1sYtpoHme_xHO5AMd5iN57I45iBKF8FVY" />
+    <link id="MainCss" rel="stylesheet" href="/skins/codinglife/bundle-codinglife.min.css?v=hlpQ1CJDwwJXDxv2HNauUmW3NjyWzoMaw1uER19SLT0" />
+    <link type="text/css" rel="stylesheet" href="https://www.cnblogs.com/qingyunzong/custom.css?v=vYbvNcQ9UMRg8MrPo2Utg42E3Sc=" />
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="/skins/codinglife/bundle-codinglife-mobile.min.css?v=YLOkrTk5E7_pa0CoJzjGN-4x4Qir3rlm737NcHZyQvQ" />
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/qingyunzong/rss" />
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/qingyunzong/rsd.xml" />
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/qingyunzong/wlwmanifest.xml" />
+    <script src="https://common.cnblogs.com/scripts/jquery-2.2.0.min.js"></script>
+    <script src="/js/blog-common.min.js?v=cjOfeR1PvDfGLdLnzp3exmJckxUGinvOfscZzbIEshk"></script>
+    <script>
+        var currentBlogId = 377245;
+        var currentBlogApp = 'qingyunzong';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+    </script>
+    
+    
+    
+</head>
+<body>
+    <a name="top"></a>
+    
+    
+<!--done-->
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/qingyunzong/"><img id="blogLogo" src="/skins/custom/images/logo.gif" alt="返回主页" /></a>		
+		
+<!--done-->
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/qingyunzong/">扎心了，老铁</a>
+</h1>
+<h2>
+
+</h2>
+
+
+
+
+		
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/qingyunzong/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/%E6%89%8E%E5%BF%83%E4%BA%86%EF%BC%8C%E8%80%81%E9%93%81">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="https://www.cnblogs.com/qingyunzong/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			
+			<span id="stats_post_count">随笔 - 
+236&nbsp; </span>
+<span id="stats_article_count">文章 - 
+0&nbsp; </span>
+<span id="stats-comment_count">评论 - 
+249</span>
+
+			
+		</div><!--end: blogStats -->
+	</div><!--end: navigator 博客导航栏 -->
+</div><!--end: header 头部 -->
+
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    <!--done-->
+    <div id="topics">
+        <div class="post">
+            <h1 class = "postTitle">
+                
+<a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/qingyunzong/p/9007107.html">Kafka学习之路 （五）Kafka在zookeeper中的存储</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                
+<div id="cnblogs_post_body" class="blogpost-body ">
+    <h2>一、Kafka在zookeeper中存储结构图</h2>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508101652574-1613892176.png" alt="" width="1000" /></p>
+<h2>二、分析</h2>
+<h3>2.1　topic注册信息</h3>
+<p>/brokers/topics/[topic] :</p>
+<p>存储某个topic的partitions所有分配信息</p>
+<div class="cnblogs_code">
+<pre>[zk: localhost:<span style="color: #800080;">2181</span>(CONNECTED) <span style="color: #800080;">1</span>] get /brokers/topics/topic2</pre>
+</div>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508103023550-1689525175.png" alt="" width="700" /></p>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">Schema:
+{
+    </span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">版本编号目前固定为数字1</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+    </span><span style="color: #800000;">"</span><span style="color: #800000;">partitions</span><span style="color: #800000;">"</span><span style="color: #000000;">: {
+        </span><span style="color: #800000;">"</span><span style="color: #800000;">partitionId编号</span><span style="color: #800000;">"</span><span style="color: #000000;">: [
+            同步副本组brokerId列表
+        ],
+        </span><span style="color: #800000;">"</span><span style="color: #800000;">partitionId编号</span><span style="color: #800000;">"</span><span style="color: #000000;">: [
+            同步副本组brokerId列表
+        ],
+        .......
+    }
+}
+Example:
+{
+</span><span style="color: #ff00ff;">"version": 1,
+"partitions": {
+"2": [1, 2, 3],
+"1": [0, 1, 2],
+"0": [3, 0, 1</span><span style="color: #000000;"><span style="color: #ff00ff;">],</span>
+}
+}</span></pre>
+</div>
+<h3>2.2　partition状态信息</h3>
+<p>/brokers/topics/[topic]/partitions/[0...N] &nbsp;其中[0..N]表示partition索引号</p>
+<p>/brokers/topics/[topic]/partitions/[partitionId]/state</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508103535274-360887579.png" alt="" width="700" /></p>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">Schema:
+{
+</span><span style="color: #800000;">"</span><span style="color: #800000;">controller_epoch</span><span style="color: #800000;">"</span><span style="color: #000000;">: 表示kafka集群中的中央控制器选举次数,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">leader</span><span style="color: #800000;">"</span><span style="color: #000000;">: 表示该partition选举leader的brokerId,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span><span style="color: #000000;">: 版本编号默认为1,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">leader_epoch</span><span style="color: #800000;">"</span><span style="color: #000000;">: 该partition leader选举次数,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">isr</span><span style="color: #800000;">"</span><span style="color: #000000;">: [同步副本组brokerId列表]
+}
+ 
+Example:
+{
+</span><span style="color: #800000;">"</span><span style="color: #800000;">controller_epoch</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">leader</span><span style="color: #800000;">"</span>: <span style="color: #800080;">3</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">leader_epoch</span><span style="color: #800000;">"</span>: <span style="color: #800080;">0</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">isr</span><span style="color: #800000;">"</span>: [<span style="color: #800080;">3</span>, <span style="color: #800080;">0</span>, <span style="color: #800080;">1</span><span style="color: #000000;">]
+}</span></pre>
+</div>
+<h3>2.3　Broker注册信息</h3>
+<p>/brokers/ids/[0...N]&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</p>
+<p class="p1">每个broker的配置文件中都需要指定一个数字类型的id(全局不可重复),此节点为临时znode(EPHEMERAL)</p>
+<p class="p1"><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508103818455-1476762306.png" alt="" width="700" /></p>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">Schema:
+{
+</span><span style="color: #800000;">"</span><span style="color: #800000;">jmx_port</span><span style="color: #800000;">"</span><span style="color: #000000;">: jmx端口号,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">timestamp</span><span style="color: #800000;">"</span><span style="color: #000000;">: kafka broker初始启动时的时间戳,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">host</span><span style="color: #800000;">"</span><span style="color: #000000;">: 主机名或ip地址,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span><span style="color: #000000;">: 版本编号默认为1,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">port</span><span style="color: #800000;">"</span><span style="color: #000000;">: kafka broker的服务端端口号,由server.properties中参数port确定
+}
+ 
+Example:
+{
+</span><span style="color: #800000;">"</span><span style="color: #800000;">jmx_port</span><span style="color: #800000;">"</span>: -<span style="color: #800080;">1</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">timestamp</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">1525741823119</span><span style="color: #800000;">"</span>
+<span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">host</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">hadoop1</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">port</span><span style="color: #800000;">"</span>: <span style="color: #800080;">9092</span><span style="color: #000000;">
+}</span></pre>
+</div>
+<h3>2.4　Controller epoch</h3>
+<p>/controller_epoch --&gt;&nbsp; int (epoch) &nbsp;&nbsp;</p>
+<p>此值为一个数字,kafka集群中第一个broker第一次启动时为1，以后只要集群中center controller中央控制器所在broker变更或挂掉，就会重新选举新的center controller，每次center controller变更controller_epoch值就会 + 1;&nbsp;</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508104057913-1808088971.png" alt="" width="700" /></p>
+<h3>2.5　Controller注册信息</h3>
+<p>/controller -&gt; int (broker id of the controller) &nbsp;存储center controller中央控制器所在kafka broker的信息</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508104206487-400676103.png" alt="" width="700" /></p>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">Schema:
+{
+</span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span><span style="color: #000000;">: 版本编号默认为1,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">brokerid</span><span style="color: #800000;">"</span><span style="color: #000000;">: kafka集群中broker唯一编号,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">timestamp</span><span style="color: #800000;">"</span><span style="color: #000000;">: kafka broker中央控制器变更时的时间戳
+}
+ 
+Example:
+{
+</span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">brokerid</span><span style="color: #800000;">"</span>: <span style="color: #800080;">0</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">timestamp</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">1525741822769</span><span style="color: #800000;">"</span><span style="color: #000000;">
+}</span></pre>
+</div>
+<p>&nbsp;</p>
+<h3>2.6　补充Consumer and Consumer group</h3>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508104651193-86573907.png" alt="" width="1000" /></p>
+<p><strong><span style="color: #ff00ff;">a.每个consumer客户端被创建时,会向zookeeper注册自己的信息;</span></strong><br /><strong><span style="color: #ff00ff;">b.此作用主要是为了"负载均衡".</span></strong><br /><strong><span style="color: #ff00ff;">c.同一个Consumer Group中的Consumers，Kafka将相应Topic中的每个消息只发送给其中一个Consumer。</span></strong><br /><strong><span style="color: #ff00ff;">d.Consumer Group中的每个Consumer读取Topic的一个或多个Partitions，并且是唯一的Consumer；</span></strong><br /><strong><span style="color: #ff00ff;">e.一个Consumer group的多个consumer的所有线程依次有序地消费一个topic的所有partitions,如果Consumer group中所有consumer总线程大于partitions数量，则会出现空闲情况;</span></strong></p>
+<blockquote>
+<div class="line number1 index0 alt2"><strong><span style="color: #ff00ff;">举例说明：</span></strong></div>
+
+
+
+
+
+
+
+
+</blockquote>
+<blockquote>
+<div class="line number1 index0 alt2"><strong><span style="color: #ff00ff;">kafka集群中创建一个topic为report-log &nbsp; 4 partitions 索引编号为0,1,2,3</span></strong></div>
+
+
+
+
+
+
+
+
+</blockquote>
+<blockquote>
+<div class="line number1 index0 alt2"><strong><span style="color: #ff00ff;">假如有目前有三个消费者node：注意--&gt;一个consumer中一个消费线程可以消费一个或多个partition.</span></strong></div>
+
+
+
+
+
+
+
+
+</blockquote>
+<blockquote>
+<div class="line number1 index0 alt2"><strong><span style="color: #ff00ff;">如果每个consumer创建一个consumer thread线程,各个node消费情况如下，node1消费索引编号为0,1分区，node2费索引编号为2,node3费索引编号为3</span></strong></div>
+
+
+
+
+
+
+
+
+</blockquote>
+<blockquote>
+<div class="line number1 index0 alt2"><strong><span style="color: #ff00ff;">如果每个consumer创建2个consumer thread线程，各个node消费情况如下(是从consumer node先后启动状态来确定的)，node1消费索引编号为0,1分区；node2费索引编号为2,3；node3为空闲状态</span></strong></div>
+
+
+
+
+
+
+
+
+</blockquote>
+<p><strong><span style="color: #ff00ff;">
+总结：</span></strong><br /><strong><span style="color: #ff00ff;">从以上可知，Consumer Group中各个consumer是根据先后启动的顺序有序消费一个topic的所有partitions的。</span></strong></p>
+<div class="line number1 index0 alt2"><strong><span style="color: #ff00ff;">如果Consumer Group中所有consumer的总线程数大于partitions数量，则可能consumer thread或consumer会出现空闲状态</span></strong>。</div>
+<h3>2.7　Consumer均衡算法</h3>
+<p><strong><span style="color: #0000ff;">当一个group中,有consumer加入或者离开时,会触发partitions均衡.均衡的最终目的,是提升topic的并发消费能力.</span></strong><br /><strong><span style="color: #0000ff;">1) 假如topic1,具有如下partitions: P0,P1,P2,P3</span></strong><br /><strong><span style="color: #0000ff;">2) 加入group中,有如下consumer: C0,C1</span></strong><br /><strong><span style="color: #0000ff;">3) 首先根据partition索引号对partitions排序: P0,P1,P2,P3</span></strong><br /><strong><span style="color: #0000ff;">4) 根据(consumer.id + '-'+ thread序号)排序: C0,C1</span></strong><br /><strong><span style="color: #0000ff;">5) 计算倍数: M = [P0,P1,P2,P3].size / [C0,C1].size,本例值M=2(向上取整)</span></strong><br /><strong><span style="color: #0000ff;">6) 然后依次分配partitions: C0 = [P0,P1],C1=[P2,P3],即Ci = [P(i * M),P((i + 1) * M -1)]</span></strong></p>
+<h3>2.8　Consumer注册信息</h3>
+<p class="p1">每个consumer都有一个唯一的ID(consumerId可以通过配置文件指定,也可以由系统生成),此id用来标记消费者信息.</p>
+<p>/consumers/[groupId]/ids/[consumerIdString]</p>
+<div class="syntaxhighlighter nogutter java">
+<p class="p1">是一个临时的znode,此节点的值为请看consumerIdString产生规则,即表示此consumer目前所消费的topic + partitions列表.</p>
+<p class="p1">consumerId产生规则：</p>
+<blockquote>
+<p class="p1">StringconsumerUuid&nbsp;= null;<br />&nbsp; &nbsp; if(config.consumerId!=null &amp;&amp; config.consumerId)<br />&nbsp; &nbsp; &nbsp; consumerUuid = consumerId;<br />&nbsp; &nbsp; else {<br />&nbsp; &nbsp; &nbsp; String&nbsp;uuid&nbsp;= UUID.randomUUID()<br />&nbsp; &nbsp; &nbsp; consumerUuid = "%s-%d-%s".format(<br />&nbsp; &nbsp; &nbsp; &nbsp; InetAddress.getLocalHost.getHostName, System.currentTimeMillis,<br />&nbsp; &nbsp; &nbsp; &nbsp; uuid.getMostSignificantBits().toHexString.substring(0,8));</p>
+<p class="p1">&nbsp; &nbsp; &nbsp;}<br />&nbsp; &nbsp; &nbsp;String&nbsp;consumerIdString&nbsp;= config.groupId + "_" + consumerUuid;</p>
+
+
+
+
+
+
+</blockquote>
+
+
+
+
+
+
+</div>
+<div class="cnblogs_code">
+<pre>[zk: localhost:<span style="color: #800080;">2181</span>(CONNECTED) <span style="color: #800080;">11</span>] <span style="color: #0000ff;">get</span> /consumers/console-consumer-<span style="color: #800080;">2304</span>/ids/console-consumer-2304_hadoop2-<span style="color: #800080;">1525747915241</span>-6b48ff32</pre>
+</div>
+<p>&nbsp;</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508105321039-416763241.png" alt="" width="700" /></p>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">Schema:
+{
+</span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span><span style="color: #000000;">: 版本编号默认为1,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">subscription</span><span style="color: #800000;">"</span>: { <span style="color: #008000;">//</span><span style="color: #008000;">订阅topic列表</span>
+<span style="color: #800000;">"</span><span style="color: #800000;">topic名称</span><span style="color: #800000;">"</span><span style="color: #000000;">: consumer中topic消费者线程数
+},
+</span><span style="color: #800000;">"</span><span style="color: #800000;">pattern</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">static</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">timestamp</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">consumer启动时的时间戳</span><span style="color: #800000;">"</span><span style="color: #000000;">
+}
+ 
+Example:
+{
+</span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">subscription</span><span style="color: #800000;">"</span><span style="color: #000000;">: {
+</span><span style="color: #800000;">"</span><span style="color: #800000;">topic2</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">
+},
+</span><span style="color: #800000;">"</span><span style="color: #800000;">pattern</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">white_list</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+</span><span style="color: #800000;">"</span><span style="color: #800000;">timestamp</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">1525747915336</span><span style="color: #800000;">"</span><span style="color: #000000;">
+}</span></pre>
+</div>
+<h3>2.9　Consumer owner</h3>
+<p>/consumers/[groupId]/owners/[topic]/[partitionId] -&gt;&nbsp;consumerIdString + threadId索引编号</p>
+<p class="p1">a) 首先进行"Consumer Id注册";</p>
+<p class="p1">b) 然后在"Consumer id 注册"节点下注册一个watch用来监听当前group中其他consumer的"退出"和"加入";只要此znode path下节点列表变更,都会触发此group下consumer的负载均衡.(比如一个consumer失效,那么其他consumer接管partitions).</p>
+<p class="p1">c) 在"Broker id 注册"节点下,注册一个watch用来监听broker的存活情况;如果broker列表变更,将会触发所有的groups下的consumer重新balance.</p>
+<p class="p1"><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508105839526-553140898.png" alt="" width="700" /></p>
+<h3>2.10　Consumer offset</h3>
+<p>/consumers/[groupId]/offsets/[topic]/[partitionId] -&gt; long (offset)</p>
+<p class="p1">用来跟踪每个consumer目前所消费的partition中最大的offset</p>
+<p class="p1">此znode为持久节点,可以看出offset跟group_id有关,以表明当消费者组(consumer group)中一个消费者失效,</p>
+<p class="p1">重新触发balance,其他consumer可以继续消费.</p>
+<p class="p1"><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508110049469-140963000.png" alt="" width="700" /></p>
+<h3>2.11　Re-assign partitions</h3>
+<p>/admin/reassign_partitions</p>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">{
+   </span><span style="color: #800000;">"</span><span style="color: #800000;">fields</span><span style="color: #800000;">"</span><span style="color: #000000;">:[
+      {
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">int</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">version id</span><span style="color: #800000;">"</span><span style="color: #000000;">
+      },
+      {
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">partitions</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span><span style="color: #000000;">:{
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">array</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">items</span><span style="color: #800000;">"</span><span style="color: #000000;">:{
+               </span><span style="color: #800000;">"</span><span style="color: #800000;">fields</span><span style="color: #800000;">"</span><span style="color: #000000;">:[
+                  {
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">topic</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">string</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">topic of the partition to be reassigned</span><span style="color: #800000;">"</span><span style="color: #000000;">
+                  },
+                  {
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">partition</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">int</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">the partition to be reassigned</span><span style="color: #800000;">"</span><span style="color: #000000;">
+                  },
+                  {
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">replicas</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">array</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">items</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">int</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">a list of replica ids</span><span style="color: #800000;">"</span><span style="color: #000000;">
+                  }
+               ],
+            }
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">an array of partitions to be reassigned to new replicas</span><span style="color: #800000;">"</span><span style="color: #000000;">
+         }
+      }
+   ]
+}
+ 
+Example:
+{
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">partitions</span><span style="color: #800000;">"</span><span style="color: #000000;">:
+     [
+        {
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">topic</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">Foo</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">partition</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">replicas</span><span style="color: #800000;">"</span>: [<span style="color: #800080;">0</span>, <span style="color: #800080;">1</span>, <span style="color: #800080;">3</span><span style="color: #000000;">]
+        }
+     ]            
+}</span></pre>
+</div>
+<h3>2.12　Preferred replication election</h3>
+<p>/admin/preferred_replica_election</p>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">{
+   </span><span style="color: #800000;">"</span><span style="color: #800000;">fields</span><span style="color: #800000;">"</span><span style="color: #000000;">:[
+      {
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">int</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">version id</span><span style="color: #800000;">"</span><span style="color: #000000;">
+      },
+      {
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">partitions</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+         </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span><span style="color: #000000;">:{
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">array</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">items</span><span style="color: #800000;">"</span><span style="color: #000000;">:{
+               </span><span style="color: #800000;">"</span><span style="color: #800000;">fields</span><span style="color: #800000;">"</span><span style="color: #000000;">:[
+                  {
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">topic</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">string</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">topic of the partition for which preferred replica election should be triggered</span><span style="color: #800000;">"</span><span style="color: #000000;">
+                  },
+                  {
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">partition</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">int</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+                     </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">the partition for which preferred replica election should be triggered</span><span style="color: #800000;">"</span><span style="color: #000000;">
+                  }
+               ],
+            }
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>:<span style="color: #800000;">"</span><span style="color: #800000;">an array of partitions for which preferred replica election should be triggered</span><span style="color: #800000;">"</span><span style="color: #000000;">
+         }
+      }
+   ]
+}
+ 
+例子:
+ 
+{
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">partitions</span><span style="color: #800000;">"</span><span style="color: #000000;">:
+     [
+        {
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">topic</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">Foo</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">partition</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">         
+        },
+        {
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">topic</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">Bar</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+            </span><span style="color: #800000;">"</span><span style="color: #800000;">partition</span><span style="color: #800000;">"</span>: <span style="color: #800080;">0</span><span style="color: #000000;">         
+        }
+     ]            
+}</span></pre>
+</div>
+<h3>2.13　删除topics</h3>
+<p>/admin/delete_topics</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508110442336-511702454.png" alt="" width="700" /></p>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">Schema:
+{ </span><span style="color: #800000;">"</span><span style="color: #800000;">fields</span><span style="color: #800000;">"</span><span style="color: #000000;">:
+    [ {</span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">int</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">version id</span><span style="color: #800000;">"</span><span style="color: #000000;">},
+      {</span><span style="color: #800000;">"</span><span style="color: #800000;">name</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">topics</span><span style="color: #800000;">"</span><span style="color: #000000;">,
+       </span><span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>: { <span style="color: #800000;">"</span><span style="color: #800000;">type</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">array</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">items</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">string</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">doc</span><span style="color: #800000;">"</span>: <span style="color: #800000;">"</span><span style="color: #800000;">an array of topics to be deleted</span><span style="color: #800000;">"</span><span style="color: #000000;">}
+      } ]
+}
+ 
+例子:
+{
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">version</span><span style="color: #800000;">"</span>: <span style="color: #800080;">1</span><span style="color: #000000;">,
+  </span><span style="color: #800000;">"</span><span style="color: #800000;">topics</span><span style="color: #800000;">"</span>: [<span style="color: #800000;">"</span><span style="color: #800000;">foo</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">bar</span><span style="color: #800000;">"</span><span style="color: #000000;">]
+}</span></pre>
+</div>
+<h3 class="syntaxhighlighter nogutter java">2.14　Topic配置</h3>
+<p>/config/topics/[topic_name]</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508110605357-406763586.png" alt="" width="700" /></p>
+<p>&nbsp;</p>
+</div>
+<div id="MySignature"></div>
+<div class="clear"></div>
+<div id="blog_post_info_block">
+    <div id="blog_post_info"></div>
+    <div class="clear"></div>
+    <div id="post_next_prev"></div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date">2018-05-08 11:06</span>&nbsp;
+<a href="https://www.cnblogs.com/qingyunzong/">扎心了，老铁</a>&nbsp;
+阅读(<span id="post_view_count">...</span>)&nbsp;
+评论(<span id="post_comment_count">...</span>)&nbsp;
+<a href="https://i.cnblogs.com/EditPosts.aspx?postid=9007107" rel="nofollow">
+    编辑
+</a>
+<a href="javascript:void(0)" onclick="AddToWz(9007107);return false;">收藏</a></div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script src="https://common.cnblogs.com/highlight/9.12.0/highlight.min.js"></script>
+<script>markdown_highlight();</script>
+<script>
+    var allowComments = true, cb_blogId = 377245, cb_blogApp = 'qingyunzong', cb_blogUserGuid = '374c0c1f-ce41-4859-9d91-08d49c352df3';
+    var cb_entryId = 9007107, cb_entryCreatedDate = '2018-05-08 11:06', cb_postType = 1; 
+    loadViewCount(cb_entryId);
+</script><a name="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<script>
+    var commentManager = new blogCommentManager();
+    commentManager.renderComments(0);
+</script>
+
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="#" onclick="return RefreshPage();">刷新页面</a><a href="#top">返回顶部</a></div>
+    <div id="comment_form_container"></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+    <div id="ad_t2"></div>
+    <div id="opt_under_post"></div>
+    <script async="async" src="https://www.googletagservices.com/tag/js/gpt.js"></script>
+    <script>
+        var googletag = googletag || {};
+        googletag.cmd = googletag.cmd || [];
+    </script>
+    <script>
+        googletag.cmd.push(function () {
+            googletag.defineSlot("/1090369/C1", [300, 250], "div-gpt-ad-1546353474406-0").addService(googletag.pubads());
+            googletag.defineSlot("/1090369/C2", [468, 60], "div-gpt-ad-1539008685004-0").addService(googletag.pubads());
+            googletag.pubads().enableSingleRequest();
+            googletag.enableServices();
+        });
+    </script>
+    <div id="cnblogs_c1" class="c_ad_block">
+        <div id="div-gpt-ad-1546353474406-0" style="height:250px; width:300px;"></div>
+    </div>
+    <div id="under_post_news"></div>
+    <div id="cnblogs_c2" class="c_ad_block">
+        <div id="div-gpt-ad-1539008685004-0" style="height:60px; width:468px;">
+            <script>
+                if (new Date() >= new Date(2018, 9, 13)) {
+                    googletag.cmd.push(function () { googletag.display("div-gpt-ad-1539008685004-0"); });
+                }
+            </script>
+        </div>
+    </div>
+    <div id="under_post_kb"></div>
+    <div id="HistoryToday" class="c_ad_block"></div>
+    <script type="text/javascript">
+        fixPostBody();
+        setTimeout(function () { incrementViewCount(cb_entryId); }, 50);
+        deliverAdT2();
+        deliverAdC1();
+        deliverAdC2();
+        loadNewsAndKb();
+        loadBlogSignature();
+LoadPostCategoriesTags(cb_blogId, cb_entryId);        LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+        GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+        loadOptUnderPost();
+        GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+    </script>
+</div>
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+
+	<div id="sideBar">
+		<div id="sideBarMain">
+			
+<div id="sidebar_news" class="newsItem">
+            <script>loadBlogNews();</script>
+</div>
+
+			<div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script>
+			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+                    <script>loadBlogSideColumn();</script>
+			</div>
+			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<div id="footer">
+		<!--done-->
+Copyright &copy; 2019 扎心了，老铁
+<br /><span id="poweredby">Powered by .NET Core 3.0.0 on Linux</span>
+
+
+
+	</div><!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+    <div id="page_end_html">
+        <script language="javascript" type="text/javascript">
+  
+  // 生成目录索引列表
+  // ref: http://www.cnblogs.com/wangqiguo/p/4355032.html
+  // modified by: zzq
+  function GenerateContentList()
+  {
+      var mainContent = $('#cnblogs_post_body');
+     var h2_list = $('#cnblogs_post_body h2');//如果你的章节标题不是h2,只需要将这里的h2换掉即可
+ 
+     if(mainContent.length < 1)
+         return;
+  
+     if(h2_list.length>0)
+     {
+         var content = '<a name="_labelTop"></a>';
+         content += '<div id="navCategory">';
+         content += '<p style="font-size:18px"><b>目录</b></p>';
+         content += '<ul>';
+         for(var i=0; i<h2_list.length; i++)
+         {
+             var go_to_top = '<div style="text-align: right"><a href="#_labelTop">回到顶部</a><a name="_label' + i + '"></a></div>';
+             $(h2_list[i]).before(go_to_top);
+             
+             var h3_list = $(h2_list[i]).nextAll("h3");
+             var li3_content = '';
+             for(var j=0; j<h3_list.length; j++)
+             {
+                 var tmp = $(h3_list[j]).prevAll('h2').first();
+                 if(!tmp.is(h2_list[i]))
+                     break;
+                 var li3_anchor = '<a name="_label' + i + '_' + j + '"></a>';
+                 $(h3_list[j]).before(li3_anchor);
+                 li3_content += '<li><a href="#_label' + i + '_' + j + '">' + $(h3_list[j]).text() + '</a></li>';
+             }
+             
+             var li2_content = '';
+             if(li3_content.length > 0)
+                 li2_content = '<li><a href="#_label' + i + '">' + $(h2_list[i]).text() + '</a><ul>' + li3_content + '</ul></li>';
+             else
+                 li2_content = '<li><a href="#_label' + i + '">' + $(h2_list[i]).text() + '</a></li>';
+             content += li2_content;
+         }
+         content += '</ul>';
+         content += '</div><p>&nbsp;</p>';
+         content += '<p style="font-size:18px"><b>正文</b></p>';
+         if($('#cnblogs_post_body').length != 0 )
+         {
+             $($('#cnblogs_post_body')[0]).prepend(content);
+         }
+     }   
+ 
+     var qqinfo =  '<p style="color:navy;font-size:12px">讨论QQ：1586558083</p>';
+     $(mainContent[0]).prepend(qqinfo);
+ }
+ 
+ GenerateContentList();
+ </script>
+    </div>
+</body>
+</html>

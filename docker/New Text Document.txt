@@ -1,0 +1,28 @@
+初始化swarm
+docker swarm init --advertise-addr 127.0.0.1
+Swarm initialized: current node (tszjtazkqrjqfenr2lb8d1z1w) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join \
+    --token SWMTKN-1-5ty6lu9qc30xi7j6itufj8pkzc2tdc8l2hvi836c502fh5tv0t-45kysf3ifyiv0l2y5jr7cm6am \
+    127.0.0.1:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+作为work加入swarm
+docker swarm join \
+  --token SWMTKN-1-49nj1cmql0jkz5s954yi3oex3nedyz0fb0xx14ie39trti4wxv-8vxv8rssmk743ojnwacrr2e7c \
+  192.168.99.100:2377
+
+docker node ls查看节点信息
+
+
+部署 portainer
+docker service create \
+--name portainer \
+--publish 9000:9000 \
+--constraint 'node.role == manager' \
+--mount type=bind,src=//var/run/docker.sock,dst=/var/run/docker.sock \
+portainer/portainer \
+-H unix:///var/run/docker.sock
