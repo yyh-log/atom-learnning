@@ -1,0 +1,31 @@
+1、
+关闭防火墙systemctl stop firewalld & systemctl disable firewalld
+关闭Swap  /etc/fstab，注释掉包含swap的那一行即可
+执行以下命令安装kubelet、kubeadm、kubectl
+yum install -y kubelet kubeadm kubectl
+2、
+确保docker 的cgroup drive 和kubelet的cgroup drive一样
+kubeadm工具来初始化K8S集群
+3、
+下载镜像，导入镜像
+kubeadm的具体介绍大家可以参考官方文档：https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/
+在Master主节点上执行:
+4、
+kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version=v1.10.0 --apiserver-advertise-address=192.168.56.101
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+5、
+创建网络
+kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+6、
+集群设置
+kubectl taint nodes --all node-role.kubernetes.io/master- 使得master节点作为一个工作节点
+其他节点加入集群
+kubeadm join 192.168.56.101:6443 --token kt62dw.q99dfynu1kuf4wgy --discovery-token-ca-cert-hash sha256:5404bcccc1ade37e9d80831ce82590e6079c1a3ea52a941f3077b40ba19f2c68
+查看所有pod状态，运行kubectl get pods -n kube-system
+
+yum install --downloadonly --downloaddir=/root/httpd httpd
+
+Object.defineProperty(this,'navigator',{value:{platform:""}});
+

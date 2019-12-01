@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="origin" />
+    <meta property="og:description" content="一、下载 下载地址： http://kafka.apache.org/downloads.html http://mirrors.hust.edu.cn/apache/ 二、安装前提（zookeepe" />
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Kafka学习之路 （四）Kafka的安装 - 扎心了，老铁 - 博客园</title>
+    
+    <link rel="stylesheet" href="/css/blog-common.min.css?v=PyyhYDRKBG1sYtpoHme_xHO5AMd5iN57I45iBKF8FVY" />
+    <link id="MainCss" rel="stylesheet" href="/skins/codinglife/bundle-codinglife.min.css?v=hlpQ1CJDwwJXDxv2HNauUmW3NjyWzoMaw1uER19SLT0" />
+    <link type="text/css" rel="stylesheet" href="https://www.cnblogs.com/qingyunzong/custom.css?v=vYbvNcQ9UMRg8MrPo2Utg42E3Sc=" />
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="/skins/codinglife/bundle-codinglife-mobile.min.css?v=YLOkrTk5E7_pa0CoJzjGN-4x4Qir3rlm737NcHZyQvQ" />
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/qingyunzong/rss" />
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/qingyunzong/rsd.xml" />
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/qingyunzong/wlwmanifest.xml" />
+    <script src="https://common.cnblogs.com/scripts/jquery-2.2.0.min.js"></script>
+    <script src="/js/blog-common.min.js?v=cjOfeR1PvDfGLdLnzp3exmJckxUGinvOfscZzbIEshk"></script>
+    <script>
+        var currentBlogId = 377245;
+        var currentBlogApp = 'qingyunzong';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+    </script>
+    
+    
+    
+</head>
+<body>
+    <a name="top"></a>
+    
+    
+<!--done-->
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+        <a id="lnkBlogLogo" href="https://www.cnblogs.com/qingyunzong/"><img id="blogLogo" src="/skins/custom/images/logo.gif" alt="返回主页" /></a>		
+		
+<!--done-->
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/qingyunzong/">扎心了，老铁</a>
+</h1>
+<h2>
+
+</h2>
+
+
+
+
+		
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+	<div id="navigator">
+		
+<ul id="navList">
+<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/qingyunzong/">
+首页</a>
+</li>
+<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/%E6%89%8E%E5%BF%83%E4%BA%86%EF%BC%8C%E8%80%81%E9%93%81">
+联系</a></li>
+<li>
+<a id="blog_nav_rss" class="menu" href="https://www.cnblogs.com/qingyunzong/rss/">
+订阅</a>
+<!--<partial name="./Shared/_XmlLink.cshtml" model="Model" /></li>--></li>
+<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+</ul>
+
+
+		<div class="blogStats">
+			
+			<span id="stats_post_count">随笔 - 
+236&nbsp; </span>
+<span id="stats_article_count">文章 - 
+0&nbsp; </span>
+<span id="stats-comment_count">评论 - 
+249</span>
+
+			
+		</div><!--end: blogStats -->
+	</div><!--end: navigator 博客导航栏 -->
+</div><!--end: header 头部 -->
+
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    <!--done-->
+    <div id="topics">
+        <div class="post">
+            <h1 class = "postTitle">
+                
+<a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/qingyunzong/p/9005062.html">Kafka学习之路 （四）Kafka的安装</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                
+<div id="cnblogs_post_body" class="blogpost-body ">
+    <h2>一、下载</h2>
+<p>下载地址：</p>
+<p><a href="http://kafka.apache.org/downloads.html" target="_blank">http://kafka.apache.org/downloads.html</a></p>
+<p><a href="http://mirrors.hust.edu.cn/apache/" target="_blank">http://mirrors.hust.edu.cn/apache/</a></p>
+<h2>二、安装前提（zookeeper安装）</h2>
+<p>参考<a href="http://www.cnblogs.com/qingyunzong/p/8634335.html#_label4_0" target="_blank">http://www.cnblogs.com/qingyunzong/p/8634335.html#_label4_0</a></p>
+<h2>三、安装</h2>
+<p>此处使用版本为kafka_2.11-0.8.2.0.tgz</p>
+<h3>2.1　上传解压缩</h3>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">[hadoop@hadoop1 ~]$ <strong><span style="color: #ff0000;">tar -zxvf kafka_2.11-0.8.2.0.tgz -C apps</span></strong>
+[hadoop@hadoop1 ~]$ <strong><span style="color: #ff0000;">cd apps/</span></strong>
+[hadoop@hadoop1 apps]$ <strong><span style="color: #ff0000;">ln -s kafka_2.11-0.8.2.0/ kafka</span></strong></span></pre>
+</div>
+<h3>2.2　修改配置文件</h3>
+<p>进入kafka的安装配置目录</p>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 ~]$ <strong><span style="color: #ff0000;">cd apps/kafka/config/</span></strong></pre>
+</div>
+<p>主要关注：<strong><span style="color: #ff0000;">server.properties</span></strong>&nbsp;这个文件即可，我们可以发现在目录下：</p>
+<p>有很多文件，这里可以发现有Zookeeper文件，我们可以根据Kafka内带的zk集群来启动，但是建议使用独立的zk集群</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180507205256986-826023478.png" alt="" width="700" /></p>
+<p>server.properties（<strong><span style="color: #ff0000;">broker.id和</span><span style="color: #ff0000;">host.name</span><span style="color: #ff0000;">每个节点都不相同</span></strong>）</p>
+<div class="cnblogs_code">
+<pre><span style="color: #008000;">//</span><span style="color: #008000;">当前机器在集群中的唯一标识，和zookeeper的myid性质一样</span>
+<span style="background-color: #ffff00;">broker.id=<span style="color: #800080;">0</span></span>
+<span style="color: #008000;">//</span><span style="color: #008000;">当前kafka对外提供服务的端口默认是9092</span>
+port=<span style="color: #800080;">9092</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">这个参数默认是关闭的，在0.8.1有个bug，DNS解析问题，失败率的问题。</span>
+<span style="background-color: #ffff00;">host.name=<span style="color: #000000;">hadoop1
+</span></span><span style="color: #008000;">//</span><span style="color: #008000;">这个是borker进行网络处理的线程数</span>
+num.network.threads=<span style="color: #800080;">3</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">这个是borker进行I/O处理的线程数</span>
+num.io.threads=<span style="color: #800080;">8</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">发送缓冲区buffer大小，数据不是一下子就发送的，先回存储到缓冲区了到达一定的大小后在发送，能提高性能</span>
+socket.send.buffer.bytes=<span style="color: #800080;">102400</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">kafka接收缓冲区大小，当数据到达一定大小后在序列化到磁盘</span>
+socket.receive.buffer.bytes=<span style="color: #800080;">102400</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">这个参数是向kafka请求消息或者向kafka发送消息的请请求的最大数，这个值不能超过java的堆栈大小</span>
+socket.request.max.bytes=<span style="color: #800080;">104857600</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">消息存放的目录，这个目录可以配置为&ldquo;，&rdquo;逗号分割的表达式，上面的num.io.threads要大于这个目录的个数这个目录，
+</span><span style="color: #008000;">//</span><span style="color: #008000;">如果配置多个目录，新创建的topic他把消息持久化的地方是，当前以逗号分割的目录中，那个分区数最少就放那一个</span>
+log.dirs=/home/hadoop/log/kafka-<span style="color: #000000;">logs
+</span><span style="color: #008000;">//</span><span style="color: #008000;">默认的分区数，一个topic默认1个分区数</span>
+num.partitions=<span style="color: #800080;">1</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">每个数据目录用来日志恢复的线程数目</span>
+num.recovery.threads.per.data.dir=<span style="color: #800080;">1</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">默认消息的最大持久化时间，168小时，7天</span>
+log.retention.hours=<span style="color: #800080;">168</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">这个参数是：因为kafka的消息是以追加的形式落地到文件，当超过这个值的时候，kafka会新起一个文件</span>
+log.segment.bytes=<span style="color: #800080;">1073741824</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">每隔300000毫秒去检查上面配置的log失效时间</span>
+log.retention.check.interval.ms=<span style="color: #800080;">300000</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">是否启用log压缩，一般不用启用，启用的话可以提高性能</span>
+log.cleaner.enable=<span style="color: #0000ff;">false</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">设置zookeeper的连接端口</span>
+zookeeper.connect=<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.102</span>:<span style="color: #800080;">2181</span>,<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.103</span>:<span style="color: #800080;">2181</span>,<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.104</span>:<span style="color: #800080;">2181</span>
+<span style="color: #008000;">//</span><span style="color: #008000;">设置zookeeper的连接超时时间</span>
+zookeeper.connection.timeout.ms=<span style="color: #800080;">6000</span></pre>
+</div>
+<p>producer.properties</p>
+<div class="cnblogs_code">
+<pre>metadata.broker.list=<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.102</span>:<span style="color: #800080;">9092</span>,<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.103</span>:<span style="color: #800080;">9092</span>,<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.104</span>:<span style="color: #800080;">9092</span></pre>
+</div>
+<p>consumer.properties</p>
+<div class="cnblogs_code">
+<pre>zookeeper.connect=<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.102</span>:<span style="color: #800080;">2181</span>,<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.103</span>:<span style="color: #800080;">2181</span>,<span style="color: #800080;">192.168</span>.<span style="color: #800080;">123.104</span>:<span style="color: #800080;">2181</span></pre>
+</div>
+<h3>2.3　将kafka的安装包分发到其他节点</h3>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 apps]$ <strong><span style="color: #ff0000;">scp -r kafka_2.11-0.8.2.0/</span></strong><span style="color: #000000;"><strong><span style="color: #ff0000;"> hadoop2:$PWD</span></strong>
+[hadoop@hadoop1 apps]$ <strong><span style="color: #ff0000;">scp </span></strong></span><strong><span style="color: #ff0000;">-r kafka_2.11-0.8.2.0/</span></strong><span style="color: #000000;"><strong><span style="color: #ff0000;"> hadoop3:$PWD</span></strong>
+[hadoop@hadoop1 apps]$ <strong><span style="color: #ff0000;">scp </span></strong></span><strong><span style="color: #ff0000;">-r kafka_2.11-0.8.2.0/ hadoop4:$PWD</span></strong></pre>
+</div>
+<h3>2.4　创建软连接</h3>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 apps]$ <strong><span style="color: #ff0000;">ln -s kafka_2.11-0.8.2.0/ kafka</span></strong></pre>
+</div>
+<h3>2.5　修改环境变量</h3>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 ~]$<strong><span style="color: #ff0000;"> vi .bashrc</span> </strong></pre>
+</div>
+<div class="cnblogs_code">
+<pre><span style="color: #000000;">#Kafka
+export KAFKA_HOME</span>=/home/hadoop/apps/<span style="color: #000000;">kafka
+export PATH</span>=$PATH:$KAFKA_HOME/bin</pre>
+</div>
+<p>保存使其立即生效</p>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 ~]$ source ~/.bashrc</pre>
+</div>
+<h2>三、启动</h2>
+<h3>3.1　首先启动zookeeper集群</h3>
+<p>所有zookeeper节点都需要执行</p>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 ~]$<strong><span style="color: #ff0000;"> zkServer.sh start</span></strong></pre>
+</div>
+<h3>3.2　启动Kafka集群服务</h3>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 kafka]$ <strong><span style="color: #ff0000;">bin/kafka-server-start.sh config/server.properties</span></strong></pre>
+</div>
+<p>hadoop1</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508091330478-1618680698.png" alt="" width="700" /></p>
+<p>Hadoop2</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508091357167-630027883.png" alt="" width="700" /></p>
+<p>hadoop3</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508091419194-1962654932.png" alt="" width="700" /></p>
+<p>hadoop4</p>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508091439631-71784584.png" alt="" width="700" /></p>
+<h3>3.3　创建的topic</h3>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 kafka]$ <strong><span style="color: #ff0000;">bin/kafka-topics.sh --create --zookeeper hadoop1:2181 --replication-factor 3 --partitions 3 --topic topic2</span></strong></pre>
+</div>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508093450833-853043206.png" alt="" width="700" /></p>
+<h3>3.4　查看topic副本信息</h3>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 kafka]$ <strong><span style="color: #ff0000;">bin/kafka-topics.sh --describe --zookeeper hadoop1:2181 --topic topic2</span></strong></pre>
+</div>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508093738851-372829720.png" alt="" width="700" /></p>
+<h3>3.5　查看已经创建的topic信息</h3>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 kafka]$ <strong><span style="color: #ff0000;">bin/kafka-topics.sh --list --zookeeper hadoop1:2181</span></strong></pre>
+</div>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508094000763-519973668.png" alt="" width="700" /></p>
+<h3>3.6　生产者发送消息</h3>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop1 kafka]$ <strong><span style="color: #ff0000;">bin/kafka-console-producer.sh --broker-list hadoop1:9092 --topic topic2</span></strong></pre>
+</div>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508094536515-251235516.png" alt="" width="700" /></p>
+<p>hadoop1显示接收到消息</p>
+<h3>3.7　消费者消费消息</h3>
+<p>在hadoop2上消费消息</p>
+<div class="cnblogs_code">
+<pre>[hadoop@hadoop2 kafka]$ <strong><span style="color: #ff0000;">bin/kafka-console-consumer.sh --zookeeper hadoop1:2181 --from-beginning --topic topic2</span></strong></pre>
+</div>
+<p><img src="https://images2018.cnblogs.com/blog/1228818/201805/1228818-20180508094916762-1544456891.png" alt="" width="700" /></p>
+<p>&nbsp;</p>
+</div>
+<div id="MySignature"></div>
+<div class="clear"></div>
+<div id="blog_post_info_block">
+    <div id="blog_post_info"></div>
+    <div class="clear"></div>
+    <div id="post_next_prev"></div>
+</div>
+            </div>
+            <div class="postDesc">posted @ 
+<span id="post-date">2018-05-08 09:50</span>&nbsp;
+<a href="https://www.cnblogs.com/qingyunzong/">扎心了，老铁</a>&nbsp;
+阅读(<span id="post_view_count">...</span>)&nbsp;
+评论(<span id="post_comment_count">...</span>)&nbsp;
+<a href="https://i.cnblogs.com/EditPosts.aspx?postid=9005062" rel="nofollow">
+    编辑
+</a>
+<a href="javascript:void(0)" onclick="AddToWz(9005062);return false;">收藏</a></div>
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script src="https://common.cnblogs.com/highlight/9.12.0/highlight.min.js"></script>
+<script>markdown_highlight();</script>
+<script>
+    var allowComments = true, cb_blogId = 377245, cb_blogApp = 'qingyunzong', cb_blogUserGuid = '374c0c1f-ce41-4859-9d91-08d49c352df3';
+    var cb_entryId = 9005062, cb_entryCreatedDate = '2018-05-08 09:50', cb_postType = 1; 
+    loadViewCount(cb_entryId);
+</script><a name="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<script>
+    var commentManager = new blogCommentManager();
+    commentManager.renderComments(0);
+</script>
+
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="#" onclick="return RefreshPage();">刷新页面</a><a href="#top">返回顶部</a></div>
+    <div id="comment_form_container"></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+    <div id="ad_t2"></div>
+    <div id="opt_under_post"></div>
+    <script async="async" src="https://www.googletagservices.com/tag/js/gpt.js"></script>
+    <script>
+        var googletag = googletag || {};
+        googletag.cmd = googletag.cmd || [];
+    </script>
+    <script>
+        googletag.cmd.push(function () {
+            googletag.defineSlot("/1090369/C1", [300, 250], "div-gpt-ad-1546353474406-0").addService(googletag.pubads());
+            googletag.defineSlot("/1090369/C2", [468, 60], "div-gpt-ad-1539008685004-0").addService(googletag.pubads());
+            googletag.pubads().enableSingleRequest();
+            googletag.enableServices();
+        });
+    </script>
+    <div id="cnblogs_c1" class="c_ad_block">
+        <div id="div-gpt-ad-1546353474406-0" style="height:250px; width:300px;"></div>
+    </div>
+    <div id="under_post_news"></div>
+    <div id="cnblogs_c2" class="c_ad_block">
+        <div id="div-gpt-ad-1539008685004-0" style="height:60px; width:468px;">
+            <script>
+                if (new Date() >= new Date(2018, 9, 13)) {
+                    googletag.cmd.push(function () { googletag.display("div-gpt-ad-1539008685004-0"); });
+                }
+            </script>
+        </div>
+    </div>
+    <div id="under_post_kb"></div>
+    <div id="HistoryToday" class="c_ad_block"></div>
+    <script type="text/javascript">
+        fixPostBody();
+        setTimeout(function () { incrementViewCount(cb_entryId); }, 50);
+        deliverAdT2();
+        deliverAdC1();
+        deliverAdC2();
+        loadNewsAndKb();
+        loadBlogSignature();
+LoadPostCategoriesTags(cb_blogId, cb_entryId);        LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+        GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+        loadOptUnderPost();
+        GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+    </script>
+</div>
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+
+	<div id="sideBar">
+		<div id="sideBarMain">
+			
+<div id="sidebar_news" class="newsItem">
+            <script>loadBlogNews();</script>
+</div>
+
+			<div id="blog-calendar" style="display:none"></div><script>loadBlogDefaultCalendar();</script>
+			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"></div>
+                    <script>loadBlogSideColumn();</script>
+			</div>
+			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<div id="footer">
+		<!--done-->
+Copyright &copy; 2019 扎心了，老铁
+<br /><span id="poweredby">Powered by .NET Core 3.0.0 on Linux</span>
+
+
+
+	</div><!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+    <div id="page_end_html">
+        <script language="javascript" type="text/javascript">
+  
+  // 生成目录索引列表
+  // ref: http://www.cnblogs.com/wangqiguo/p/4355032.html
+  // modified by: zzq
+  function GenerateContentList()
+  {
+      var mainContent = $('#cnblogs_post_body');
+     var h2_list = $('#cnblogs_post_body h2');//如果你的章节标题不是h2,只需要将这里的h2换掉即可
+ 
+     if(mainContent.length < 1)
+         return;
+  
+     if(h2_list.length>0)
+     {
+         var content = '<a name="_labelTop"></a>';
+         content += '<div id="navCategory">';
+         content += '<p style="font-size:18px"><b>目录</b></p>';
+         content += '<ul>';
+         for(var i=0; i<h2_list.length; i++)
+         {
+             var go_to_top = '<div style="text-align: right"><a href="#_labelTop">回到顶部</a><a name="_label' + i + '"></a></div>';
+             $(h2_list[i]).before(go_to_top);
+             
+             var h3_list = $(h2_list[i]).nextAll("h3");
+             var li3_content = '';
+             for(var j=0; j<h3_list.length; j++)
+             {
+                 var tmp = $(h3_list[j]).prevAll('h2').first();
+                 if(!tmp.is(h2_list[i]))
+                     break;
+                 var li3_anchor = '<a name="_label' + i + '_' + j + '"></a>';
+                 $(h3_list[j]).before(li3_anchor);
+                 li3_content += '<li><a href="#_label' + i + '_' + j + '">' + $(h3_list[j]).text() + '</a></li>';
+             }
+             
+             var li2_content = '';
+             if(li3_content.length > 0)
+                 li2_content = '<li><a href="#_label' + i + '">' + $(h2_list[i]).text() + '</a><ul>' + li3_content + '</ul></li>';
+             else
+                 li2_content = '<li><a href="#_label' + i + '">' + $(h2_list[i]).text() + '</a></li>';
+             content += li2_content;
+         }
+         content += '</ul>';
+         content += '</div><p>&nbsp;</p>';
+         content += '<p style="font-size:18px"><b>正文</b></p>';
+         if($('#cnblogs_post_body').length != 0 )
+         {
+             $($('#cnblogs_post_body')[0]).prepend(content);
+         }
+     }   
+ 
+     var qqinfo =  '<p style="color:navy;font-size:12px">讨论QQ：1586558083</p>';
+     $(mainContent[0]).prepend(qqinfo);
+ }
+ 
+ GenerateContentList();
+ </script>
+    </div>
+</body>
+</html>
