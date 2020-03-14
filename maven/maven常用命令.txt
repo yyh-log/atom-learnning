@@ -1,0 +1,42 @@
+安装本地jar包到本地maven仓库
+mvn install:install -Dfile=xxx/xxx.jar -DgroupId=com.yyh -DartifactId=sdk-core -Dversion=1.0.0 -Dpackaging=jar
+
+创建maven的普通java项目
+mvn archetype:create -DgroupId=packageName -DartifactId=projectName
+
+创建maven的web项目
+mvn archetype:create -DgroupId=xxx -DartifactId=xxx -DarchetypeArtifactId=maven-archetype-webapp
+
+反向生成maven项目的骨架
+mvn archetype:generate
+
+编译源代码
+mvn compile
+
+构建相对本地路径为远程仓库
+<repository>
+  <id>lib</id>
+  <name>esg-lib</name>
+  <url>file://${project.basedir}/../libs/</url>
+</repository>
+
+Dependency的score
+scope有以下几种情况
+compile默认scope
+provided表示该报有tomcat或jdk提供最常见的如servlet-api和jsp-api包等
+runtime
+test
+system
+<dependency>
+  <groupId></groupId>
+  <artifactId></artifactId>
+  <versioh><version>
+  <scope>system</scope>
+  <systemPath>${project}/libs//xxx.jar</systemPath>
+</dependency>
+maven中的dependency属性
+groupId artifactId versioh type classifier scope systemPth exclusions optional
+a依赖b依赖c
+a->b->c
+
+<optional>true</optional>为true时表示a不引入c的依赖

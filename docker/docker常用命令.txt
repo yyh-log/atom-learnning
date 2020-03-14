@@ -1,0 +1,124 @@
+#docker服务
+systemctl start docker
+systemctl stop docker
+systemctl restart docker
+systemctl status docker
+systemctl enable docker
+查看docker日志
+cat /var/log/message|grep docker
+docker logs {docker_id}
+journalctl -u -f docker.service
+docker info {docker_id}
+docker tag
+docker inspect id
+docker search
+docker rmi
+docker rm
+基于已有镜像创建容器
+docker commit -m "author" -a "message" containId image
+docker save -o 导出 或 docker save >
+docker load in导入或docker load <
+
+#容器
+docker create -it 镜像
+docker start containId
+docker run等价于docker create加docker start
+docker run -d后台运行
+docker stop id
+docker exec -it id bin/bash
+
+#仓库
+docker hub
+docker pool
+docker run -d -p 5000:5000 registry
+docker run --name docker-registry -d -p 5000:5000 registry
+docker tag ubuntu:latest 127.0.0.1:5000/ubuntu
+docker push 127.0.0..1:5000/ubuntu
+配置国内镜像
+vi /etc/docker/daemon.json
+{
+  "registry-mittors":["https://registry.docker-cn.com"]
+}
+官方
+--registry-mirrory = https://registry.docker-cn.com
+网易
+http://hub-mirror.c.163.com
+
+#数据卷
+docker run -v /tmp:/root
+挂在一个主机目录作为数据卷
+docker run -d -P --name web -v /src/webapp:/opt/webapp training/webapp
+只读
+docker run -d -P --name web -v /src/webapp:/opt/webapp:ro training/webapp
+docker run时使用-v 可以在容器内创建一个数据卷 可供容器之间数据共享
+docker run -it -v /dbdata --name dbdata ubuntu
+dokcer run -it --volumes-from dbdata --name db1 ubuntu
+dokcer run -it --volumes-from dbdata --name db2 ubuntu
+
+备份
+docker run --volumes-from dbdata -v ${pwd}:/backup --name worker ubuntu tar cvf /backup/back.tar /dbdata
+恢复
+docker run --volumes-from dbdata -v ${pad}:/backup ubuntu tar xvf /backup/backup.tar
+
+#网络
+启动容器默认外部是无法通过网络来访问容器内部，可以通过-P或-p来指定端口映射。-P会随机应设一个端口，-p需要指定一个端口
+docker network ls
+--link name:alias name
+
+#Dockerfile
+分为四个部分
+基础镜像信息
+维护者信息
+镜像操作指令
+FROM 
+MAINTAINER
+RUN
+CMD
+EXPOSE
+
+开启远程端口
+vi /usr/lib/systemd/docker.service
+ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix://var/run/docker.sock \
+systemctl daemon-reload
+systemctl restart docker
+
+vi /etc/docker/daemon.json
+{
+  "hosts":["unix:///var/run/docker.sock","0.0.0.0:2375"]
+}
+
+修改存储路径的四种方式
+
+查看网桥
+brctl show
+查看容器转发地址
+iptables -t nat -nvL POSTROUTING
+停止网桥
+ip link set dev docker0 down
+删除网桥
+brctl delbr docker0
+创建网桥
+brctl addbr bridge0
+分配网桥地址
+ip addr add 192.18.5.1/24 dev bridge0
+启动网桥
+ip link set dev bridge0 up
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

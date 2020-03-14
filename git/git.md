@@ -42,7 +42,8 @@ git remote rm [name]: 删除一个存在的remote alias
 git remote set-url [name] [url]:更新url  
 git remote rename [old-name] [new-name]: 重命名  
 #### git rebase
-rebase命令执行后，实际上是将分支点从C移到了G，这样分支也就具有了从C到G的功能
+rebase命令执行后，实际上是将分支点从C移到了G，这样分支也就具有了从C到G的功能  
+https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%8F%98%E5%9F%BA
 
 ![](assets/f0b58ec3.png)
 

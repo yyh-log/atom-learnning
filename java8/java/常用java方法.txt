@@ -1,0 +1,52 @@
+ImmutableSet.copyOf
+flatMap
+Optional.of
+eventBus
+Preconditions.checkNotNull
+Optional<>.map()
+Optional<>.orElse()
+Optional<>.orElaseGet()
+stream().skip
+checkState(！isNullOrEmpty(index),"Index name must not be null or empty")
+MoreObjects.firstNonNull(x,y)如果x不为null，则返回。否则返回第二个参数
+ImmutableMap
+实现iterably接口
+guava retry
+Function
+private <RemoteInterfaceType,FinalResponseType> Optional<FinalResponseType> searchFunction(Function<RemoteInterfaceType,Call<FinalResponseType>> fn,RemoteInterfaceType interfaceType)
+random.nextIn(5)
+Supplier<>
+Predicate<>
+final类
+TreeMap
+Path
+Closeable
+Stream.concat(stream1,stream2)合并两个stream
+Map.computeIfAbsent(K key,Function<? super K, ? extends V> mappingFunction)
+Objects.requireNonNul
+
+静态内部类
+public static class Entry {
+}
+Collections.unmodifiableMap(registry);
+#Returns a unary operator that always returns its input argument.
+UnaryOperator.identity() return t->t
+CopyOnWriteArrayList
+CheckedConsumer
+EnumSet.of
+static <Response> ActionListener<Response> wrap(CheckedConsumer<Response, ? extends Exception> onResponse,
+            Consumer<Exception> onFailure) {
+        return new ActionListener<Response>() {
+            @Override
+            public void onResponse(Response response) {
+                try {
+                    onResponse.accept(response);
+                } catch (Exception e) {
+                    onFailure(e);
+                }
+            }
+        };
+    }
+回调
+this.action.filters[i].apply(task, actionName, request, listener, this);
+

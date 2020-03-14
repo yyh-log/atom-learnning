@@ -1,0 +1,17 @@
+NetworkModule Node.java 460 
+  for(NetworkPlugin plugin : plugins){}
+  transportFactories 存放Transport
+  transportHttpFactories 存放HttpServerTransport
+  transportIntercetors
+ 
+TransportService Node.java 686
+  TransportService包含Transport成员属性
+  transportService.start()->transport.start()-> Netty4Transport.doStart();126 -> ch.pipeline().addLast("dispatcher", new Netty4MessageChannelHandler(Netty4Transport.this)); 353
+  SecurityNetty4Transport extends Netty4Transport extends Transport
+  connectToNode()->connectionManager.connectToNode()->tcpTransport.initiateConnection()->Netty4Transport.initiateChannel()
+  sendRequest()->TcpTransport.NodeChannels.sendRequest()->OutboundHandler.internalSend()
+  
+injector.getInstance(HttpServerTransport.class).start(); 751
+  SecurityNetty4HttpServerTransport.start()->Netty4HttpServerTransport.start()-> ch.pipeline().add(Netty4HttpRequestHandler.class)
+
+

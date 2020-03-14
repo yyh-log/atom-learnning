@@ -1,0 +1,259 @@
+
+//stored fields, doc values, terms,
+ and postings
+LeafReader
+//Access to the terms in a specific field
+Terms
+
+TermsEnum
+
+//Iterates through the postings
+PostingsEnum(Iterator)
+
+// Extension of {@link PostingsEnum}
+ImpactsEnum
+
+什么是Postings
+
+
+每一个分片返回一个QuerySearchResult
+
+
+
+Lucene搜索流程(上)
+http://www.nosqlnotes.com/technotes/searchengine/lucene-search-1/
+
+//Lucene搜索
+https://www.jianshu.com/p/4f63d477d93d
+
+SortedDocValues
+https://www.amazingkoala.com.cn/Lucene/DocValues/2019/0219/34.html
+
+
+//第一个分片的聚合结果
+{
+	"method_term": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [{
+			"key": "GET",
+			"doc_count": 4,
+			"max_avg": {
+				"value": 14.0
+			}
+		}, {
+			"key": "DELETE",
+			"doc_count": 3,
+			"max_avg": {
+				"value": 37.0
+			}
+		}, {
+			"key": "POST",
+			"doc_count": 2,
+			"max_avg": {
+				"value": 25.0
+			}
+		}]
+	}
+}
+
+//第二个分片的聚合结果
+{
+	"method_term": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [{
+			"key": "POST",
+			"doc_count": 2,
+			"max_avg": {
+				"value": 27.0
+			}
+		}, {
+			"key": "DELETE",
+			"doc_count": 1,
+			"max_avg": {
+				"value": 37.0
+			}
+		}]
+	}
+}
+第一步
+Map<String,List<StringTerms>> 
+{ 
+    "method_term":{//key1
+   [
+     {
+	 "method_term": {//key2
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [{
+			"key": "GET",
+			"doc_count": 4,
+			"max_avg": {
+				"value": 14.0
+			}
+		}, {
+			"key": "DELETE",
+			"doc_count": 3,
+			"max_avg": {
+				"value": 37.0
+			}
+		}, {
+			"key": "POST",
+			"doc_count": 2,
+			"max_avg": {
+				"value": 25.0
+			}
+		}]
+	}
+   },
+	//第二个分片
+	{
+	"method_term": {//key2
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [{
+			"key": "POST",
+			"doc_count": 2,
+			"max_avg": {
+				"value": 27.0
+			}
+		}, {
+			"key": "DELETE",
+			"doc_count": 1,
+			"max_avg": {
+				"value": 37.0
+			}
+		}]
+	}
+    }
+		 
+    ]
+   }//key1
+}
+
+
+第二步
+Map<String,List<Bucket>> 
+
+{ 
+   "method_term":{
+         [{
+			"key": "GET",
+			"doc_count": 4,
+			"max_avg": {
+				"value": 14.0
+			}
+		}, {
+			"key": "DELETE",
+			"doc_count": 3,
+			"max_avg": {
+				"value": 37.0
+			}
+		}, {
+			"key": "POST",
+			"doc_count": 2,
+			"max_avg": {
+				"value": 25.0
+			}
+		},//下面为第二个分片的结果
+		{
+			"key": "POST",
+			"doc_count": 2,
+			"max_avg": {
+				"value": 27.0
+			}
+		}, {
+			"key": "DELETE",
+			"doc_count": 1,
+			"max_avg": {
+				"value": 37.0
+			}
+		}
+		]
+   
+   }
+}
+第三步对Buckets数组里面的bucket再次进行按key分类
+{ 
+   "method_term":[//Map<key,list<Bucket>>
+      {
+       "GET":
+		 [{
+			"key": "GET",
+			"doc_count": 4,
+			"max_avg": {
+				"value": 14.0
+			}
+		  } 
+		]
+	  },//key为GET
+
+     { "DELETE":
+	     [{
+			"key": "DELETE",
+			"doc_count": 3,
+			"max_avg": {
+				"value": 37.0
+			}
+		 },
+         {
+			"key": "DELETE",
+			"doc_count": 1,
+			"max_avg": {
+				"value": 37.0
+			}
+		 }
+		]
+	 },//DELETE
+	 { "POST":
+		[
+		  {
+		    "key": "POST",
+			"doc_count": 2,
+			"max_avg": {
+				"value": 25.0
+			}
+		  },
+		  {
+			"key": "POST",
+			"doc_count": 2,
+			"max_avg": {
+				"value": 27.0
+			}
+		  }
+		]
+	}//POST
+  }
+  ]
+			
+}
+
+第四步
+{
+   {
+     "GET":{ ...}
+   },
+   {
+     "DELETE": {...}
+   },
+   {
+     "POST":
+        [
+		 {
+		  "max_avg":[ //
+		  
+		  Internal.doReduce()
+			{
+				"value": 25.0
+			},
+		    {
+				"value": 27.0
+			}
+		  ]
+		 }//max_avg
+		]
+   }//POST
+}
+
+进入InternalMax.doReduce()
