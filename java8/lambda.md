@@ -56,13 +56,13 @@ negate/and/or
 Predicate<Apple> notRedApple = redApple.negate();redApple对象的非  
 Predicate<Apple> redAndHeavyApple = redApple.and(a->a.getWeight() > 140);  
 Predicate<Apple> redApple = redApple.and().or();  
-####函数复合
+#### 函数复合
 Funtion接口有andThen和compose两个默认方法  
 Function<Integer,Integer> f = x->x+1;  
 Function<Integer,Integer> g = x->x*2;  
 Function<Integer,Integer> h = f.andThen(g);//数学上表示g(f(x))  
 Function<Integer,Integer> h2 = f.compose(g);//数学上表示f(g(x))
-##Stream
+## Stream
 ```java
 Stream()  
         .filter()  
