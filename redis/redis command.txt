@@ -1,0 +1,217 @@
+单值缓存
+SET key value
+GET key
+
+对象缓存
+SET USER1: VALUE
+MSET USER1:NAME JAMS, USER2:NAME MICHAEL
+MGET 批量获取
+
+分布锁
+SETNX product1:10001 true //返回1代表获取锁成功，返回0代表失败
+。。。执行任务
+DEL product1:10001 删除锁
+SET product:10001 true ex 10 nx防止程序意外终止导致死锁
+
+计数器
+INCR 
+SET page_view 20
+INCR page_view
+GET page_view
+
+
+分布式session
+spring session+redis实现
+
+分布式系统全局序列号
+INCRBY ORDERID 1000
+
+SET rank 50
+INCRBY rank 20
+GET rank
+"70"
+
+//hash操作
+HSET KEY field value                 存储一个哈希表key的减值   
+HSETNX KEY FIELD VALUE               存储一个不存在的哈希表key的键值
+HMSET KEY FIELD VALUE[FIELD VALUE]   存储一个哈希表key中存储多个键值对
+HGET KEY FIELD                          
+HMGET KEY FIELD[FILED...]
+HDEL KEY FIELD [FIELD...]
+HLEN KEY                 
+HGETALL KEY                          返回key所有键值
+HINCRBY KEY FIELD INCREMENT             
+
+应用场景
+购物车
+1）以用户id作为key
+2）商品id为field
+3）商品数量为value
+
+购物车操作
+添加商品
+添加数量
+商品总数
+
+
+//LIST常用操作
+LPUSH KEY VALUE[VALUE...]
+RPUSH KEY VALUE[VALUE...]
+LPOP KEY
+RPOP KEY
+LRANGE KEY START STOP           返回列表key中指定区间内的元素，start和stop指定起始位置
+BLPOP KEY [KEY...] TIMEOUT      阻塞LPOP若key指定list没有值，则阻塞，若TIMEOUT为0则一直阻塞
+BRPOP KEY [KEY...] TIMEOUT      阻塞RPOP若key指定list没有值，则阻塞，若TIMEOUT为0则一直阻塞
+
+应用场景
+公众号推送消息
+关注A和B
+LPUSH userId MessageA
+LPush userId MessageB
+
+
+
+//SET常用操作
+SADD key member [member..] 往key里添加成员
+SREM key  member [member...] 若key不存在则新建
+SMEMBERS key 获取key所有成员
+SCARD key    获取key成员数量
+SISMEMBER key member 判断member是否是key成员
+SRANDMEMBER key [count] 从key中随机抽取count个成员
+SPOP key [count] 从key中随机抽取count个成员元素从key中删除
+
+
+抽奖
+
+点赞,搜藏
+SADD messageId userId
+取消点赞
+SREM messageId userId
+是否点过赞
+SISMERMBER messageId userId
+获取点赞列表
+SMEMBERS messageId
+获取点赞用户数
+SCARD messageId
+
+关注模型
+共同关注的人
+SINTER key1 key2 求交集
+SUNION key1 key2 求并集
+
+可能认识的人
+SDIFF key1 key2 求差集
+
+有序集合
+Redis 有序集合和集合一样也是string类型元素的集合,且不允许重复的成员。
+不同的是每个元素都会关联一个double类型的分数。redis正是通过分数来为集合中的成员进行从小到大的排序。
+有序集合的成员是唯一的,但分数(score)却可以重复
+
+
+ZADD key score1 member1 [score2 member2] 向有序集合添加一个或多个成员，或者更新已存在成员的score1
+ZCARD key获取有序集合的成员数
+ZCOUNT key min max 计算在有序集合中指定区间分数的成员数
+ZINCRBY key increment member 有序集合中对指定成员的9分数加上增量 increment
+ZRANGE key start stop [WITHSCORES] 通过索引区间返回有序集合指定区间内的成员
+ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT]通过分数返回有序集合指定区间内的成员
+ZRANK key member 返回有序集合中指定成员的索引
+ZREM key member [member ...] 移除有序集合中的一个或多个成员
+ZSCORE key member 返回有序集中，成员的分数值
+ZREVRANGE key start stop [WITHSCORES] 返回有序集中指定区间内的成员，通过索引，分数从高到低
+ZUNIONSTORE destination numkeys key [key ...] 计算给定的一个或多个有序集的并集，并存储在新的 key 中
+
+Zset集合操作
+
+点击新闻
+ZINCRBY hotNews:20200202 1 守护香港
+展示当日排行前十
+采用ZREVRANGE hotNews 0 10
+
+七日搜索榜单计算
+采用ZUNIONSTORE 
+
+展示七日排行前十
+采用ZREVRANGE
+
+微博附件的人
+搜索自动补全
+布隆过滤器
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

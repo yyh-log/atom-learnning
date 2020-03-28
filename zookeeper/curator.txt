@@ -1,0 +1,13 @@
+apache curator官网地址
+http://curator.apache.org/curator-recipes/
+
+curator使用教程
+https://github.com/smallnest/ZKRecipesByExample
+
+关于curator服务发现主要涉及三个角色
+ServiceInstance 服务实例信息
+ServiceProvider 服务提供者(包含ServiceInstance信息注册到zk中)
+ServiceDiscovery 服务发现，服务注册，也可以直接注册ServiceInstance信息
+
+http://curator.apache.org/curator-x-discovery/index.html
+https://blog.csdn.net/mn960mn/article/details/51803128?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task

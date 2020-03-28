@@ -1,0 +1,2 @@
+https://www.cnblogs.com/savorboard/p/distributed-system-transaction-consistency.html
+https://blog.csdn.net/weixin_40533111/article/details/85069536
