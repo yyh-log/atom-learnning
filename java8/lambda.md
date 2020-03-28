@@ -1,9 +1,9 @@
-##Lambda
+## Lambda
 &nbsp;&nbsp;&nbsp;&nbsp;Lambda可以简单理解为简洁的表示可传递的匿名函数的一种方式：它没有名称，但它有参数列表，
 函数主体，返回类型，可能还有一个可以抛出的异常列表。  
 &nbsp;&nbsp;&nbsp;&nbsp;例如用了Lambda定义一个Comparator对象  
 先前：  
-```
+```java
 Comparator<Apple> byWeight = new Comparator<Apple>(){
   public int compare(Apple a1,Apple a2){
     return a1.getWeight().compareTo(a.getWeight());
@@ -11,7 +11,7 @@ Comparator<Apple> byWeight = new Comparator<Apple>(){
 }
 ```
 现在：  
-```
+```java
 Comparator<Apple> byWeight = (Apple a1,Apple a2) -> a1.getWeight().compareTo(a2.getWeight());
 ```
 Lambda语法  
@@ -19,7 +19,7 @@ Lambda语法
 ()->{ statements; }  return加大括号  
 
 Lambda运用在函数接口上，函数式接口就是指只定义一个抽象方法的接口。常见的jdk自带的函数式接口：  
-```
+```java
 @FunctionalInterface
 public interface Predicate<T>{
   boolean test(T t);
@@ -46,12 +46,12 @@ LongBinaryOperator;
 IntFunction;
 ```
 常见的jdk自带的函数式接口是不允许抛出异常的，需要用try catch捕捉。  
-####方法引用
+#### 方法引用
 java.util.Comparator.comparing;
 （Apple a1,Apple a2）->a1.getWeight().compareTo(a2.getWeight()) = comparing(Apple::getWeight);  
 Supplier<Apppe> c1 = Apple::new;  
 Aooke a1 = c1.get();  
-#####谓词复合
+##### 谓词复合
 negate/and/or
 Predicate<Apple> notRedApple = redApple.negate();redApple对象的非  
 Predicate<Apple> redAndHeavyApple = redApple.and(a->a.getWeight() > 140);  
@@ -63,7 +63,7 @@ Function<Integer,Integer> g = x->x*2;
 Function<Integer,Integer> h = f.andThen(g);//数学上表示g(f(x))  
 Function<Integer,Integer> h2 = f.compose(g);//数学上表示f(g(x))
 ##Stream
-```
+```java
 Stream()  
         .filter()  
         .distinct()  
@@ -82,9 +82,9 @@ words.stream()
 输出"GoodbyeWorld"
 ![](assets/5c88dcbf.png)
 
-#####查找和匹配  
+##### 查找和匹配  
 allMatch, anyMatch, noneMatch, findFirst, findAny  
-#####归纳reduce操作  
+##### 归纳reduce操作  
 元素求和  
 numbers.stream().reduce(0,(a,b)->a+b);
 更为简洁的方式  
@@ -94,7 +94,7 @@ numbers.stream().reduce(Integer::max);
 numbers.stream().reduce(Integer::min)；  
 
 练习题：  
-```
+```java
 //交易员
 public class Trader{
   private final String name;
@@ -149,7 +149,7 @@ Stream<Integer> stream = intStream.boxed();
 Stream.iterate(0,n->n+2).limit(10).forEach(System.out::printIn);  
 Steam.generate(Math::random).limit(5);  
 
-####Collectors
+#### Collectors
 汇总  
 menu.steam().collect(counting());  
 menu.stream().collect(summingInt(Dish::getCalories));  
@@ -164,7 +164,7 @@ menu.stream().collect(joining(","));
 汇总  
 int totalCalories = menu.stream().collect(reducing(0,Dish::getCalories,(i,j)->i+j));  
 分组  
-```
+```java
 Map<Dish.Type,List<Dish> dishesByType = menu.stream().collect(groupingBy(Dish::getTeype));  
 Map<ColoricLevel,List<Dish>> dishesByCaloricLevel = menu.stream().collect(groupingBy(dish->{
   if(dish.getCalories()<=400) return CaloricLevel.DIET;
@@ -177,12 +177,12 @@ Map<Dish.Type,Optional<Dish>> mostCaloricBytype = menu.strem().collect(groupingB
 分区  
 分区是分组的特殊情况，最多有两项一组是true，一组是false。  
 Map<Boolean,List<Dish>> partitionedMenu = menu.stream().collect(partitioningBy(Dish::isVegetarian));  
-####Collectors静态方法
+#### Collectors静态方法
 ![](assets/18223741.png)
 ![](assets/0dba0a6c.png)
 
-####重构设计模式
-```
+#### 重构设计模式
+```java
 1、策略模式  
 定义策略接口  
 public interface ValidationStrategy{
