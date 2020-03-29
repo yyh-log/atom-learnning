@@ -127,7 +127,7 @@ transactions.stream().filter(t->t.getYear()==2012).sorted(comparing(Transaction:
 2)交易员都在哪些不同的城市工作过  
 transactions.stream().map(Transaction::getTrader).map(Trader::getCity).distinct().collect(Collectors.toList());  
 3)查找所有来自剑桥的交易员的姓名，并按姓名排序  
-transactions.stream().map(Transaction::getTrader).fliter(t->t.getCity.equal("Cambridge")).sorted(comparing(Trader::getName)).collect(Collectors.toList());  
+transactions.stream().map(Transaction::getTrader).fliter(t-> t.getCity.equal("Cambridge")).sorted(comparing(Trader::getName)).collect(Collectors.toList());  
 4)返回所有交易员的姓名字符串，按字母排序
 transactions.stream().map(Transaction::getTrader).map(Trader::getName).distinct().sorted(comparing(Trader::getName)).collect(Collectors.toList());  
 5)有没有交易员是在米兰工作的   
