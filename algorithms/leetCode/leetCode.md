@@ -248,6 +248,7 @@ class Solution {
 #### 79、单词搜索
 [LeetCode](https://leetcode-cn.com/problems/word-search/)  
 典型回溯问题，关键是在于上下四个方向进行搜索为了避免节点重复访问，通过visit[][]标记当前访问的节点，然后传给子递归，这样子递归函数就知道当前节点已经访问过。一旦四个个方向都未找到，则记得visit[][]需要重置状态。回溯法最重要的一点就是当前递归结束时一定不能修改任何父节点传下来的值。  
+![](assets/302da2ed.png)
 ```java
 class Solution {
     public boolean exist(char[][] board, String word) {
@@ -373,6 +374,36 @@ class Solution {
 时间复杂度 O(Nlog 2 N)： 最差情况下， isBalanced(root) 遍历树所有节点，占用 O(N) ；判断每个节点的最大高度 depth(root) 需要遍历 各子树的所有节点 ，子树的节点数的复杂度为 O(log_2 N)  
 空间复杂度 O(N)： 最差情况下（树退化为链表时），系统递归需要使用O(N) 的栈空间。  
 ```
+#### 113、路径总和II
+[LeetCode](https://leetcode-cn.com/problems/path-sum-ii/submissions/)  
+先序遍历二叉树，当前是叶子节点时判断累积的节点总和是否等于目标值，如果是的话添加到结果集中。递归过程中用tmp保存经过的每一个节点，所以结束递归的时候记得重置，否则会造成重复错误。因为sum是int类型的所以无需重置，若sum不是int类型的话，不仅tmp要重置状态，sum也要重置状态。这里所说的重置状态就是恢复父节点传下来的值(回溯思想)。  
+![](assets/6248902b.png)
+```java
+class Solution {
+    public List<List<Integer>> pathSum(TreeNode root, int sum) {
+        List<List<Integer>> result = new ArrayList<>();
+        dfs(root,new ArrayList<>(),sum,result,0);
+        return result;
+    }
+
+    public void dfs(TreeNode root,List<Integer> tmp,int target,List<List<Integer>> result,int sum){
+        if(root!=null){
+            sum += root.val;
+            tmp.add(root.val);
+            //当时叶子节点时判断sum是否等于目标值，如果是的话添加到结果集中，返回时主要把tmp进行状态重置
+            if(root.left==null && root.right==null && sum==target){
+                result.add(new ArrayList<>(tmp));
+                tmp.remove(tmp.size()-1);//结束递归返回上一层前要回归状态(回溯思想)
+                return;
+            }
+            dfs(root.left,tmp,target,result,sum);
+            dfs(root.right,tmp,target,result,sum);
+            tmp.remove(tmp.size()-1);
+        }
+    }
+}
+```
+
 #### 116、填充每个节点的下一个右侧节点指针
 [填充每个节点的下一个右侧节点指针](https://leetcode-cn.com/problems/populating-next-right-pointers-in-each-node/)  
 按层次遍历树然后求解  
@@ -445,5 +476,54 @@ class Solution {
             caculate(node.right,current);
         }
     }
+}
+```
+#### 164、最大间距
+
+```java
+private class Bucket {
+    int min = Integer.MAX_VALUE;
+    int max = Integer.MIN_VALUE;
+}
+
+public int maximumGap(int[] nums) {
+    if (nums == null || nums.length < 2) {
+        return 0;
+    }
+    
+    int min = Integer.MAX_VALUE;
+    int max = Integer.MIN_VALUE;
+    //找出数组最大和最小值
+    for (int i : nums) {
+        min = Math.min(min, i);
+        max = Math.max(max, i);
+    }
+    
+    int bucketSize = Math.max(1, (max - min) / (nums.length - 1));
+    Bucket[] buckets = new Bucket[(max - min) / bucketSize + 1];
+    for (int i = 0; i < nums.length; ++i) {
+        int loc = (nums[i] - min) / bucketSize;
+        
+        if (buckets[loc] == null) {
+            buckets[loc] = new Bucket();
+        }
+        
+        buckets[loc].min = Math.min(buckets[loc].min, nums[i]);
+        buckets[loc].max = Math.max(buckets[loc].max, nums[i]);
+    }
+    
+    int previousMax = Integer.MAX_VALUE; int maxGap = Integer.MIN_VALUE;
+    for (int i = 0; i < buckets.length; ++i) {
+        if (buckets[i] != null && previousMax != Integer.MAX_VALUE) {
+            maxGap = Math.max(maxGap, buckets[i].min - previousMax);
+        }
+        
+        if (buckets[i] != null) {
+            previousMax = buckets[i].max;
+            maxGap = Math.max(maxGap, buckets[i].max - buckets[i].min);
+        }
+    }
+    
+    return maxGap;
 }
 ```
