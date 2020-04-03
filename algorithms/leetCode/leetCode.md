@@ -450,7 +450,35 @@ class Solution {
     }
 }
 ```
+#### 122、买卖股票的最佳时期  
+[LeetCode](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)  
+1、暴力算法  
+每遍历一个节点都只会两个动作，不操作和（买或卖），其中是买还是卖要看上一层的状态，如果上一层的状态是买的话，那么当前层的操作就只能是不操作和卖了，依次类推。节点的值是当前累积利润的实时值，当index==prices.length表示已经遍历所有节点。
+![](assets/53cd872e.png)
+```java
+class Solution {
+    int max;
+    public int maxProfit(int[] prices) {
+        max = 0;
+        int status = 1;//1可买状态 -1可卖状态
+        dfs(prices,0,1,0);
+        return max;
+    }
 
+    public void dfs(int[] prices,int index,int status,int reprofit){
+        if(index==prices.length){
+            max = Math.max(max,reprofit);
+            return;
+        }
+        dfs(prices,index+1,status,reprofit);//不操作,statsu状态直接传递下去
+        if(status==1){//当前节点如果是可买的状态，那么传给子节点就是可卖状态。
+            dfs(prices,index+1,-1,reprofit-prices[index]);
+        }else{
+            dfs(prices,index+1,1,reprofit+prices[index]);
+        }
+    }
+}
+```
 #### 129、 求根到叶子节点数字之和  
 [求根到叶子节点数字之和](https://leetcode-cn.com/problems/sum-root-to-leaf-numbers/)  
 ![](assets/b90129a9.png)  
