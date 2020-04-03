@@ -135,7 +135,95 @@ class Solution {
     }
 }
 ```
+#### 53、最大子序和
+[LeetCode](https://leetcode-cn.com/problems/maximum-subarray/submissions/)  
+比较简单的思路就是遍历每种情况，然后求出最大值。因为是连续的子序列，所以递归函数只有一次执行。
+```java
+1、回溯（暴力）
+class Solution {
+    int max;
+    public int maxSubArray(int[] nums) {
+        max = nums[0];
+        for(int i=0;i<nums.length;i++){
+            track(nums,i,0);
+        }
+        return max;
+    }
 
+    public void track(int[] nums,int index,int sum){
+        if(index<nums.length){
+            sum += nums[index];
+            if(sum>max) max=sum;
+            track(nums,index+1,sum);
+            sum -= nums[index];
+        }
+    }
+}  
+```
+2、动态规划
+以dp[i]表示以nums[i]结尾的最大子序和  
+dp[i]=max(dp[i-1]+nums[i],nums[i])  
+dp[0]=nums[0]  
+![](assets/4f55ae19.png)
+```java
+class Solution {
+    public int maxSubArray(int[] nums) {
+      int[] dp = new int[nums.length];
+      dp[0]=nums[0];
+        int n = nums.length, maxSum = nums[0];
+    for(int i = 1; i < n; ++i) {
+      if (nums[i - 1] > 0) nums[i] += nums[i - 1];
+      maxSum = Math.max(nums[i], maxSum);
+    }
+    return maxSum;
+    }
+
+}
+
+```
+#### 56、插入区间  
+[LeetCode](https://leetcode-cn.com/problems/insert-interval/solution/cha-ru-qu-jian-by-leetcode/)  
+算法如下图所示：  
+先循环遍历找出所有左区间小于新输入左区间添加到output数组里，然后再依次和output数组最后一个元素比较，若有重叠就合并后添加到output。
+![](assets/dbdb4423.png)
+```java
+class Solution {
+    public int[][] insert(int[][] intervals, int[] newInterval) {
+        
+        List<int[]> output = new ArrayList<>();
+        int index=0;
+        while(index<intervals.length && newInterval[0]>intervals[index][0]){
+            output.add(intervals[index++]);
+        }
+        if(output.isEmpty()||output.get(output.size()-1)[1]<newInterval[0]){
+            output.add(newInterval);
+        }else{
+             int[] last = output.remove(output.size()-1);//取出最后一个元素
+             int[] tmp = new int[2];
+            tmp[0] = Math.min(last[0],newInterval[0]);
+            tmp[1] = Math.max(last[1],newInterval[1]);
+            output.add(tmp);
+        }
+        
+        while(index<intervals.length){
+        int[] last = output.remove(output.size()-1);//取出最后一个元素
+        int[] cur = intervals[index++];
+            //有重叠
+        if(last[1]>=cur[0] && last[0]<=cur[0]){
+            int[] tmp = new int[2];
+            tmp[0] = Math.min(last[0],cur[0]);
+            tmp[1] = Math.max(last[1],cur[1]);
+            output.add(tmp);
+        }else{
+            output.add(last);
+            output.add(cur);
+        }
+        }
+        //return output.toArray(new int[output.size()]);
+        return output.toArray(new int[output.size()][2]);
+    }
+}
+```
 ####  78、 子集
 [子集](https://leetcode-cn.com/problems/subsets/)   
 回溯过程中各个变量的实时值 
@@ -157,6 +245,50 @@ class Solution {
     }
 }
 ```
+#### 79、单词搜索
+[LeetCode](https://leetcode-cn.com/problems/word-search/)  
+典型回溯问题，关键是在于上下四个方向进行搜索为了避免节点重复访问，通过visit[][]标记当前访问的节点，然后传给子递归，这样子递归函数就知道当前节点已经访问过。一旦四个个方向都未找到，则记得visit[][]需要重置状态。回溯法最重要的一点就是当前递归结束时一定不能修改任何父节点传下来的值。  
+```java
+class Solution {
+    public boolean exist(char[][] board, String word) {
+        if(board.length==0|| word==null ||word.isEmpty()) return false;
+        int h = board.length;//高度
+        int w = board[0].length;//宽度
+
+        boolean[][] visit = new boolean[h][w];
+        for(int i=0;i<h;i++){
+            for(int j=0;j<w;j++){
+                //找到首字母然后进行递归寻找
+                if(board[i][j]==word.charAt(0)){
+                    if(track(board,word,i,j,0,visit)){//找到返回true
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;//遍历所有情况未找到返回false
+
+    }
+    //cur记录访问word字符串的位置
+    //visit记录board已访问过的点
+    public boolean track(char[][] board,String word,int x,int y,int cur,boolean[][] visit){
+        if(cur==word.length()) return true;//cur==word.size()则表示遍历完所有word的字符返回true
+        if(x<0||x>=board.length||y<0||y>=board[0].length) return false;//坐标超出边界返回false
+        if(visit[x][y]) return false;//该节点已经搜索过
+        if(board[x][y]!=word.charAt(cur)) return false;//x,y坐标的字符和word.charAt(cur)不相同返回false
+        //找到相同字符，进行下一层递归
+        visit[x][y]=true;
+        //往四个方向搜索
+        if(track(board,word,x+1,y,cur+1,visit)||track(board,word,x-1,y,cur+1,visit)
+        ||track(board,word,x,y+1,cur+1,visit)||track(board,word,x,y-1,cur+1,visit)){
+            return true;
+        }
+        visit[x][y]=false;//回归状态
+        return false;//未找到
+    }
+}
+```
+
 #### 90、 子集II
 [子集II](https://leetcode-cn.com/problems/subsets-ii/)  
 和78题相比区别在于输入数组存在相同的元素，为了避免得到重复的结果必须先排序，然后保证同一层相同值得节点只能被选择一次。  
@@ -180,6 +312,27 @@ class Solution {
             track(nums,i+1,tmp,result);
             tmp.remove(tmp.size()-1);
         }
+    }
+}
+```
+#### 108、 将有序数组转换为二叉搜索树
+[LeetCode](https://leetcode-cn.com/problems/convert-sorted-array-to-binary-search-tree/)  
+时间复杂度：O(N)，每个元素只访问一次。
+空间复杂度：O(N)，二叉搜索树空间 O(N)，递归栈深度 O(logN)。
+```java
+class Solution {
+    public TreeNode sortedArrayToBST(int[] nums) {
+        //每次选择数组中间的值作为根节点，这样才能保证是平衡；如果题目的数组为排序，则需要先排序在递归
+        return dfs(nums,0,nums.length-1);
+    }
+
+    public TreeNode dfs(int[] nums,int low,int high){
+        if(low>high) return null;
+        int p = (low+high)/;
+        TreeNode root = new TreeNode(nums[p]);
+        root.left=dfs(nums,low,p-1);
+        root.right=dfs(nums,p+1,high);
+        return root;
     }
 }
 ```
