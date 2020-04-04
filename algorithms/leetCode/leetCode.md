@@ -403,7 +403,53 @@ class Solution {
     }
 }
 ```
+#### 114
+1、用栈存储节点
+```java
+class Solution {
+    public void flatten(TreeNode root) {
+        Stack<TreeNode> stack = new Stack<>();
+        dfs(root,stack);
+        if(!stack.isEmpty()){
+            TreeNode node = stack.pop();
+            node.left = null;
+            while(!stack.isEmpty()){
+                TreeNode peek = stack.pop();
+                peek.right = node;
+                peek.left = null;
+                node = peek;
+            }
+            root = node;
+        }
+    }
 
+    void dfs(TreeNode node,Stack<TreeNode> stack){
+        if(node!=null){
+            stack.add(node);
+            dfs(node.left,stack);
+            dfs(node.right,stack);
+        }
+    }
+}
+2、后续遍历
+```java
+class Solution {
+    TreeNode pre = null;
+    public void flatten(TreeNode root) {
+        dfs(root);
+    }
+
+    public void dfs(TreeNode node){
+        if(node!=null){
+            dfs(node.right);
+            dfs(node.left,pre);
+            node.left=null;
+            node.right=pre;
+            pre=node;
+        }
+    }
+}
+```
 #### 116、填充每个节点的下一个右侧节点指针
 [填充每个节点的下一个右侧节点指针](https://leetcode-cn.com/problems/populating-next-right-pointers-in-each-node/)  
 按层次遍历树然后求解  
@@ -479,6 +525,55 @@ class Solution {
     }
 }
 ```
+2、贪心算法
+Pn-P1=(Pn-Pn-1)+(Pn-1-Pn-2)...+(p2-p1)  
+找到折线图中所有上升的阶段，把上升的差值累积起来即为最终的解。
+![](assets/c5b39b66.png)  
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+           int maxProfit = 0;
+           for(int i=1;i<prices.length;i++){
+               int profit = prices[i]-prices[i-1];
+               if(profit>0){
+                   maxProfit+=profit;
+               }
+           }
+           return maxProfit;
+    }
+
+}
+```
+3、动态规划  
+![](assets/b01dc2ad.png)
+状态 dp[i][j] 定义如下  
+第一维 i 表示索引为 i 的那一天（具有前缀性质，即考虑了之前天数的收益）能获得的最大利润；  
+第二维 j 表示索引为 i 的那一天是持有股票，还是持有现金。这里 0 表示持有现金（cash），1 表示持有股票  
+动态规划等效于在暴力算法中找到最优解而不用遍历每个节点。以i=1时的-1节点和-7节点为例，俩节点时持有股票状态，那么对于操作下一个节点num[2]=5时不管是不操作还是卖，-1所有的子节点都是比-7的子节点值要大，所以对于同一层同一状态的节点而言只要选择值最大的节点遍历即可找到利润最大值。  
+```java
+public class Solution {
+    public int maxProfit(int[] prices) {
+        int len = prices.length;
+        if (len < 2) {
+            return 0;
+        }
+        // 0：持有现金
+        // 1：持有股票
+        // 状态转移：0 → 1 → 0 → 1 → 0 → 1 → 0
+        int[][] dp = new int[len][2];
+
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+
+        for (int i = 1; i < len; i++) {
+            // 这两行调换顺序也是可以的
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+        }
+        return dp[len - 1][0];
+    }
+}
+```
 #### 129、 求根到叶子节点数字之和  
 [求根到叶子节点数字之和](https://leetcode-cn.com/problems/sum-root-to-leaf-numbers/)  
 ![](assets/b90129a9.png)  
@@ -503,6 +598,33 @@ class Solution {
         if(node.right!=null){
             caculate(node.right,current);
         }
+    }
+}
+```
+#### 加油站
+[LeetCode](https://leetcode-cn.com/problems/gas-station/)  
+![](assets/0bba02b9.png)  
+\*\*\*i\*\*\*\*j\*\*\*  
+如果i最远只能达到j,那么i和j(包括j)之间所有的点都无法圆形环绕回到原点 
+```java
+class Solution {
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+        int n = gas.length;
+        for(int i=0;i<n;i++){
+            int sum=gas[i];//汽车初始汽油容量
+            for(int j=i;;){
+                sum-=cost[j];//耗油
+                if(sum<0){//油耗尽,最多到达j
+                    if(j<i) return -1;//说明i和n之间的值都无法到达原点
+                    i=j;//下一次从j+1开始遍历，一定要有上面j<i的判断，否则会造成死循环
+                    break;
+                }
+                j=(j+1)%n;//油足够可以到大下一个地点
+                sum+=gas[j]; 
+                if(i==j) return j;//回到起点
+            }
+        }
+        return -1;//未找到
     }
 }
 ```
