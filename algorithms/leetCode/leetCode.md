@@ -316,6 +316,197 @@ class Solution {
     }
 }
 ```
+#### 91、解码方法
+[LeetCode](https://leetcode-cn.com/problems/decode-ways/)  
+
+```java
+class Solution {
+
+    Map<Integer,Integer> tmp = new HashMap<>();//用来保存已经搜索过的结果
+    public int numDecodings(String s) {
+        return dfs(0,s);
+    }
+
+    int dfs(int index,String s){
+        //超出长度结束递归为什么是1？例输入单字符'6'递归到底就是一种结果，可以输入一些简单字符串来判断结束递归的条件
+        if(index>=s.length()){
+            return 1;
+        }
+        //字符串以0开头，没有任何结果
+        if(s.charAt(index)=='0'){
+            return 0;
+        }
+
+        //(2)(2)6123,第一个遍历字符的时候已经6123这个子串结果计算出来了，那么进行第二个递归的时候(22)6123直接从tmp拿结果
+        int m = tmp.getOrDefault(index, -1);
+        if(m!=-1){
+            return tmp.get(index);
+        }
+
+        int a = 0;
+        int b = 0;
+        
+        a = dfs(index+1,s);//(2)26;
+        //270111，最大值不能大于26，例如27大于26不符合条件
+        if(index+1<s.length() && Integer.valueOf(s.substring(index,index+2))<=26){
+            b = dfs(index+2,s);//(22)6
+        }
+        tmp.put(index,a+b);
+        return a+b;
+    }
+}
+```
+动态规划  
+用一个 dp 数组， dp [ i ] 代表字符串 s [ i, s.len-1 ]，也就是 s 从 i 开始到结尾的字符串的解码方式。
+这样和递归完全一样的递推式。
+如果 s [ i ] 和 s [ i + 1 ] 组成的数字小于等于 26，那么
+dp [ i ] = dp[ i + 1 ] + dp [ i + 2 ]  
+```java
+class Solution {
+
+    public int numDecodings(String s) {
+        //dp[i]=dp[i+1]+dp[i+2]
+        int n = s.length();
+        int[] dp = new int[n+1];
+        dp[n] = 1;//最后一个元素
+
+        if(s.charAt(n-1)!='0'){
+            dp[n-1] = 1;
+        }
+
+        for(int i=n-2;i>=0;i--){
+
+            if(s.charAt(i)=='0'){
+                continue;
+            }
+            int a = dp[i+1];
+            int b = 0;
+            if(((s.charAt(i)-'0')*10+s.charAt(i+1)-'0')<=26){
+                b = dp[i+2];
+            }
+            dp[i] = a +  b;
+        }
+
+        return dp[0];
+    }
+
+}
+```
+#### 95、不同的二叉搜索树II
+[LeetCode](https://leetcode-cn.com/problems/unique-binary-search-trees-ii/)  
+```java
+class Solution {
+    public List<TreeNode> generateTrees(int n) {
+         if (n == 0) {
+            return new LinkedList<TreeNode>();
+         }
+        return dfs(1,n);
+    }
+
+    List<TreeNode> dfs(int start,int end){
+        List<TreeNode> result = new ArrayList<>();
+
+        if(start>end){//递归结束条件
+            result.add(null);
+            return result;
+        }
+        for(int i=start;i<=end;i++){
+            List<TreeNode> left = dfs(start,i-1);//[start,i-1]种二叉搜索树
+            List<TreeNode> right = dfs(i+1,end);//[i+1,end]种二叉搜索树
+            for(TreeNode l:left){
+                for(TreeNode r: right){
+                    TreeNode cur = new TreeNode(i);
+                    cur.left=l;
+                    cur.right=r;
+                    result.add(cur);//一种
+                }
+            }
+        }
+        return result;//返回[start,end]序列有多少种二叉树
+    }
+}
+```
+#### 96、不同的二叉搜索树
+[LeetCode](https://leetcode-cn.com/problems/unique-binary-search-trees/submissions/)  
+给定一个有序序列 1 ... n，为了根据序列构建一棵二叉搜索树。我们可以遍历每个数字 i，将该数字作为树根，1 ... (i-1) 序列将成为左子树，(i+1) ... n 序列将成为右子树。于是，我们可以递归地从子序列构建子树。  
+
+```java
+1.递归
+class Solution {
+    Map<Integer,Integer> tmp;
+    public int numTrees(int n) {
+        //以start和end确定一条序列
+        tmp = new HashMap<>();
+        return dfs(1, n);
+    }
+
+    int dfs(int start,int end){
+        if(start>end){
+            return 1;
+        }
+        int result=0;
+        for(int i=start;i<=end;i++){
+            int left = dfs(start,i-1);
+            int right = dfs(i+1,end);
+            result += left*right;
+        }
+        return result;
+    }
+}
+```
+![](assets/461da1e6.png)  
+举例而言以 3 为根的不同二叉搜索树个数。为了以 3 为根从序列 [1, 2, 3, 4, 5, 6, 7] 构建二叉搜索树，我们需要从左子序列 [1, 2] 构建左子树，从右子序列 [4, 5, 6, 7] 构建右子树，然后将它们组合(即笛卡尔积)。G(i)=G(i-1)*G(n-i);    
+2.动态规划
+```java
+class Solution {
+
+        public int numTrees(int n) {
+        int[] G = new int[n + 1];
+        G[0] = 1;
+        G[1] = 1;
+
+    for (int i = 2; i <= n; ++i) {//遍历以i为头结点的树
+      for (int j = 1; j <= i; ++j) {
+        G[i] += G[j - 1] * G[i - j];
+      }
+    }
+    return G[n];
+  }
+}
+```
+#### 98 验证二叉搜索树  
+```java
+//因为二叉搜索树中序遍历是递增的,所以我们可以中序遍历判断前一数是否小于后一个数.
+class Solution {
+    TreeNode pre = null;
+
+    public boolean isValidBST(TreeNode root) {
+        if (root == null) return true;
+        if (!isValidBST(root.left)) return false;
+        if (pre != null && pre.val >= root.val) return false;
+        pre = root;
+        return isValidBST(root.right);
+    }
+}
+非递归中序遍历方法
+class Solution {
+    public boolean isValidBST(TreeNode root) {
+        Deque<TreeNode> stack = new LinkedList<>();
+        TreeNode p = root;
+        TreeNode pre = null;
+        while (p != null || !stack.isEmpty()) {
+            while (p != null) {
+                stack.push(p);
+                p = p.left;
+            }
+            p = stack.pop();
+            if (pre != null && pre.val >= p.val) return false;
+            pre = p;
+            p = p.right;
+        }
+        return true;
+    }
+```
 #### 108、 将有序数组转换为二叉搜索树
 [LeetCode](https://leetcode-cn.com/problems/convert-sorted-array-to-binary-search-tree/)  
 时间复杂度：O(N)，每个元素只访问一次。
@@ -404,6 +595,7 @@ class Solution {
 }
 ```
 #### 114
+[LeetCode]()  
 1、用栈存储节点
 ```java
 class Solution {
@@ -628,6 +820,52 @@ class Solution {
     }
 }
 ```
+#### 148 排序链表
+[LeetCode](https://leetcode-cn.com/problems/sort-list/)  
+算法时间复杂度要求O(nLogn),所以需要用归并排序。
+用快慢指针方法找到链表中间位置的节点
+![](assets/79141653.png)
+```java
+class Solution {
+    public ListNode sortList(ListNode head) {
+        if(head==null || head.next==null) return head;
+
+        //快慢指针法找到链表的中间
+        ListNode fast = head.next;
+        ListNode slow = head;
+        while(fast!=null && fast.next!=null){
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        //此时slow即为链表中间位置
+        ListNode tmp = slow.next;//保存右链表
+        slow.next = null;//从冲击断开链表
+        ListNode left = sortList(head);//递归左链表
+        ListNode right = sortList(tmp);//递归右链表
+
+        //合并两个已经排序的链表
+        ListNode l = new ListNode(0);//初始化新链表的头结点
+        ListNode h = l;
+        while(left!=null && right!=null){
+            if(left.val<right.val){
+                l.next = left;
+                left = left.next;
+            }else{
+                l.next = right;
+                right = right.next;
+            }
+            l = l.next;
+        }
+        if(left!=null){//right链表比较短，先到尾部，则直接把left剩下的节点连接到新链表的后边即可
+            l.next = left;
+        }
+        if(right!=null){
+            l.next = right;
+        }
+        return h.next;
+    }
+}
+```
 #### 164、最大间距
 
 ```java
@@ -676,4 +914,124 @@ public int maximumGap(int[] nums) {
     
     return maxGap;
 }
+```
+#### 215 数组中的第K个最大值
+[LeetCode](https://leetcode-cn.com/problems/kth-largest-element-in-an-array/)    
+ 注意应该构造小顶堆，小顶堆堆顶元素为最小元素，在一次遍历数组添加到堆时如果堆size大于k，
+ 会把堆顶移除，即堆内最小元素移除，这样保证当数组遍历结束，堆的堆顶元素才为第k个最大值。
+```java
+1、堆排序  
+class Solution {
+    public int findKthLargest(int[] nums, int k) {
+
+        PriorityQueue<Integer> queue = new PriorityQueue<Integer>((n1, n2) -> n1 - n2);//小顶堆
+
+        for(int n:nums){
+            queue.add(n);
+            if(queue.size()>k){
+                queue.poll();//移除堆顶元素，因为是小顶堆所以移除的是堆内最小元素
+            }
+        }
+        return queue.poll();
+    }
+}
+时间复杂度 O(nlogk)
+空间复杂度 O(K)
+2、快速排序  
+class Solution {
+    public int findKthLargest(int[] nums, int k) {
+        int n = nums.length;
+        int p = select(nums,0,n-1,n-k);
+        return nums[p];
+    }
+
+    public int select(int[] nums,int low,int high,int target){
+        if(low<high){
+            int privot = partition(nums,low,high);
+            if(privot==target) return privot;//找到target返回
+            else if(privot > target){
+            return select(nums,low,privot-1,target);//搜索左边
+            }else{
+            return select(nums,privot+1,high,target);//搜索右边
+            }
+        }
+        return low;
+    }
+    public int partition(int[] nums,int low,int high){
+        int rand = (int)(Math.random()*(high-low+1)+low);//产生一个[low,hihg]的随机值
+        //和low元素进行交换，目的是提高搜索效率
+        int tmp = nums[rand];
+        nums[rand] = nums[low];
+        nums[low] = tmp;
+
+        //双指针寻找，tmp必须等于nums[low]
+        tmp = nums[low];
+        while(low < high){
+            while(low<high && nums[high]>=tmp) high--;
+            if(low<high){
+                nums[low++] = nums[high];
+            }
+            while(low<high && nums[low]<=tmp) low++;
+            if(low<high){
+                nums[high--] = nums[low];
+            }
+        }
+        nums[low] = tmp;
+        return low;//枢轴
+    }
+}
+时间复杂度 O(n)最坏的情况O(N2)
+空间复杂度 O(2)
+```
+
+#### 220. 存在重复元素III
+[LeetCode](https://leetcode-cn.com/problems/contains-duplicate-iii/)  
+```java
+1、暴力算法
+//注意2147483647和-1的特殊情况，两者相减的绝对值溢出为0导致结果报错，所以采用long型变量进行比较
+class Solution {
+    public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        int len = nums.length;
+        long a;
+        long b;
+
+        for (int i = 0; i < len; i++) {
+            for (int j = i + 1; j < len && j <= i + k; j++) {
+                a = nums[i];
+                b = nums[j];
+                if (Math.abs(a - b) <= t) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+```
+2、滑动窗口  
+![](assets/504ec295.png)  
+题目要求在坐标区间[i,i+k]范围内是否存在|num[i]-nums[j]|<=t，则把它转成滑动窗口问题，滑动
+窗口里面的数值采用TreeSet存储，TreeSet是二叉平衡搜索树，查找，添加，删除复杂度都是logn。
+需要注意：[i,i+k]实际上有k+1个元素，所以滑动窗口的size最大只能为k。  
+```java
+class Solution {
+    public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        TreeSet<Long> treeSet = new TreeSet<>();//二叉平衡搜索树
+        for(int i=0;i<nums.length;i++){
+            Long s = treeSet.ceiling((long)nums[i]);//大于等于nums[i]的最小值 int不能直接转Long，记得用long强转
+            if(s!=null && (s-nums[i]) <=t) return true;//
+
+            Long g = treeSet.floor((long)nums[i]);//小于等于nums[i]的最大值
+            if(g!=null && (nums[i]-g) <=t) return true;
+            
+            treeSet.add((long)nums[i]);
+            if(treeSet.size()>k){
+                treeSet.remove((long)nums[i-k]);//删除复杂度Logn
+            }
+        } 
+        return false;
+    }
+}
+时间复杂度：O(nLog(min(n,k)))  //k是有可能大于数组的长度的
+空间复杂度: O(min(n,k))
 ```
