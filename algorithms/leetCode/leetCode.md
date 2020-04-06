@@ -68,6 +68,39 @@ class Solution {
    }
 }
 ```
+#### 45、跳跃游戏II
+[LeetCode](https://leetcode-cn.com/problems/jump-game-ii/)   
+每次在可选范围内选择能跳的最远的下标，例如第一个元素2,它可选择的范围是蓝色的3,1。因为选择3它可以提到1+3=4的位置最远，所以选择3.  
+选择3后，有1,1,4三种选择。因为选择4时能跳到最远，所以选择4依次类推。
+![](assets/337599f3.png)  
+```java
+class Solution {
+    public int jump(int[] nums) {
+        int n = nums.length;
+        if(n==0 || n==1) return 0;
+
+        int step = 0;//记录步骤
+
+        for(int i=0;i<n;){
+            if(i+nums[i]>=n-1){//如果能直接跳到最后,则直接得到结果
+               return step +1;
+            } else{//选可以跳的范围内值最大的下标位置
+              int index = i+1;
+              int max = 0;
+              for(int j=i+1;j<=i+nums[i];j++){
+                  if(j+ nums[j]>=max){
+                      max = j+ nums[j];
+                      index = j;
+                  }
+              }
+              i= index;//下次从index位置开始选择
+            }
+            step++;
+        }
+        return step;
+    }
+}
+```
 #### 46、全排列
 [全排列](https://leetcode-cn.com/problems/permutations/submissions/)  
 ![](assets/d587fa92.png)  
@@ -474,8 +507,11 @@ class Solution {
   }
 }
 ```
+
 #### 98 验证二叉搜索树  
+[LeetCode]
 ```java
+1、递归
 //因为二叉搜索树中序遍历是递增的,所以我们可以中序遍历判断前一数是否小于后一个数.
 class Solution {
     TreeNode pre = null;
@@ -488,7 +524,7 @@ class Solution {
         return isValidBST(root.right);
     }
 }
-非递归中序遍历方法
+2、非递归中序遍历方法
 class Solution {
     public boolean isValidBST(TreeNode root) {
         Deque<TreeNode> stack = new LinkedList<>();
@@ -506,6 +542,7 @@ class Solution {
         }
         return true;
     }
+  }
 ```
 #### 108、 将有序数组转换为二叉搜索树
 [LeetCode](https://leetcode-cn.com/problems/convert-sorted-array-to-binary-search-tree/)  
@@ -565,6 +602,33 @@ class Solution {
 时间复杂度 O(Nlog 2 N)： 最差情况下， isBalanced(root) 遍历树所有节点，占用 O(N) ；判断每个节点的最大高度 depth(root) 需要遍历 各子树的所有节点 ，子树的节点数的复杂度为 O(log_2 N)  
 空间复杂度 O(N)： 最差情况下（树退化为链表时），系统递归需要使用O(N) 的栈空间。  
 ```
+#### 112、路径总和
+[LeetCode](https://leetcode-cn.com/problems/path-sum/)  
+![](assets/2254bd49.png)
+```java
+class Solution {
+    public boolean hasPathSum(TreeNode root, int sum) {
+        return dfs(root,0,sum);
+    }
+
+    boolean dfs(TreeNode node,int sum,int target){
+        if(node==null){
+            return false;
+        }
+        sum += node.val;
+        if(node.left==null && node.right==null){//若当前节点时叶子节点，则必须结束递归
+            if(sum == target){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        //若当前不是叶子节点，则尝试搜索它的左子树和右子树
+        return dfs(node.left,sum,target)|| dfs(node.right,sum,target);
+    }
+}
+```
+
 #### 113、路径总和II
 [LeetCode](https://leetcode-cn.com/problems/path-sum-ii/submissions/)  
 先序遍历二叉树，当前是叶子节点时判断累积的节点总和是否等于目标值，如果是的话添加到结果集中。递归过程中用tmp保存经过的每一个节点，所以结束递归的时候记得重置，否则会造成重复错误。因为sum是int类型的所以无需重置，若sum不是int类型的话，不仅tmp要重置状态，sum也要重置状态。这里所说的重置状态就是恢复父节点传下来的值(回溯思想)。  
@@ -820,6 +884,42 @@ class Solution {
     }
 }
 ```
+#### 135、分发糖果  
+[LeetCode](https://leetcode-cn.com/problems/candy/)  
+用left和right数组来保存两种规则： 
+如果i的分数大于i-1,那么i的糖果比i-1加1，把结果存在left数组里面。  
+如果i的分数大于i+1,那么i的糖果比i+1加1，把结果存在right数组里面。  
+然后去两个数组同位置i的最大值即为该分配的糖果数。  
+![](assets/87c60f95.png)
+```java
+class Solution {
+    public int candy(int[] ratings) {
+        int[] left = new int[ratings.length];
+        int[] right = new int[ratings.length];
+
+        Arrays.fill(left,1);
+        Arrays.fill(right,1);
+
+        for(int i=1;i<left.length;i++){
+            if(ratings[i]>ratings[i-1]){//si>si-1
+                left[i] = left[i-1] + 1;
+            }
+        }
+
+        for(int i=right.length-2;i>=0;i--){
+            if(ratings[i]>ratings[i+1]){//si>si+1
+                right[i] = right[i+1] + 1;
+            }
+        }
+
+        int sum = 0;
+        for(int i=0;i<ratings.length;i++){
+            sum += Math.max(left[i],right[i]);
+        }
+        return sum;
+    }
+}
+```
 #### 148 排序链表
 [LeetCode](https://leetcode-cn.com/problems/sort-list/)  
 算法时间复杂度要求O(nLogn),所以需要用归并排序。
@@ -913,6 +1013,26 @@ public int maximumGap(int[] nums) {
     }
     
     return maxGap;
+}
+```
+#### 179、最大数
+[LeetCode](https://leetcode-cn.com/problems/largest-number/)  
+先把输入数组转成字符串数组，然后两两进行比较如果b+a>a+b,那么交换a和b的位置"23 36"->"35 23"要熟悉数字转string的函数使用  
+```java
+class Solution {
+    public String largestNumber(int[] nums) {
+
+        //先排序,采用自定义比较器转成字符串
+        //lambda比较器
+        String[] input = Arrays.stream(nums).boxed().map(Object::toString).toArray(String[]::new);
+        Arrays.sort(input,(x,y)->(y+x).compareTo(x+y));
+        StringBuilder result = new StringBuilder();
+
+        for (String s : input) {
+            result.append(s);
+        }
+        return result.toString().startsWith("0") ? "0" : result.toString();
+    }
 }
 ```
 #### 215 数组中的第K个最大值
@@ -1034,4 +1154,22 @@ class Solution {
 }
 时间复杂度：O(nLog(min(n,k)))  //k是有可能大于数组的长度的
 空间复杂度: O(min(n,k))
+```
+#### 242、有效的字母异位词
+[LeetCode](https://leetcode-cn.com/problems/valid-anagram/)  
+```java
+class Solution {
+    public boolean isAnagram(String s, String t) {
+
+        if(s.length()!=t.length()) return false;
+
+        char[] a = s.toCharArray();
+        char[] b = t.toCharArray();
+
+        Arrays.sort(a);
+        Arrays.sort(b);
+        
+        return Arrays.equals(a,b);
+    }
+}
 ```
