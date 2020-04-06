@@ -1,3 +1,86 @@
+#### 17、电话号码的字母组合  
+[LeetCode](https://leetcode-cn.com/problems/letter-combinations-of-a-phone-number/)  
+//经典回溯问题  
+```java
+class Solution {
+    public List<String> letterCombinations(String digits) {
+        List<String> result = new ArrayList<>();
+        if(digits.isEmpty()){
+            return result;
+        }
+        String[] number = new String[10];
+        number[2] = "abc";
+        number[3] = "def";
+        number[4] = "ghi";
+        number[5] = "jkl";
+        number[6] = "mno";
+        number[7] = "pqrs";
+        number[8] = "tuv";
+        number[9] = "wxyz";
+        
+        track(digits,number,0,new StringBuilder(),result);
+        return result;
+    }
+
+    //index为输入字符串digits的下标
+    public void track(String digits,String[] number,int index,StringBuilder str,List<String> result){
+        if(index==digits.length()) {
+            result.add(str.toString());
+            return;//递归到底结束
+        }
+        char a = digits.charAt(index);//下标对应的数字字符
+        String letter = number[a-'0'];//数字对应的字母 不能直接Integer.valueOf('1'),会返回'i'的ascii值
+        for(int i=0;i<letter.length();i++){
+            str.append(letter.charAt(i));
+            track(digits,number,index+1,str,result);
+            str.deleteCharAt(str.length()-1);
+        }
+    }
+}
+```
+#### 23、合并K个排序链表
+利用归并方法两两合并两个链表，直到全部有序。  
+```java
+class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        if(lists.length==0) return null;
+        return dfs(lists,0,lists.length-1);
+    }
+
+    public ListNode dfs(ListNode[] lists,int low,int high){
+        if(low < high){
+            int p = (low+high)/2;
+            ListNode left = dfs(lists,low,p);//归并左边序列
+            ListNode right = dfs(lists,p+1,high);//归并右边序列
+            return merge(left,right);
+        }
+        return lists[low];//low==high
+    }
+
+    public ListNode merge(ListNode left,ListNode right){
+        ListNode p = new ListNode(0);//新链表头节点
+        ListNode head = p;
+        while(left!=null && right!=null){
+            if(left.val<right.val){
+                p.next = left;
+                left = left.next;
+            }else{
+                p.next = right;
+                right = right.next;
+            }
+            p = p.next;
+        }
+
+        if(left!=null){//如果left链表还有剩余
+            p.next = left;
+        }
+         if(right!=null){//如果right链表还有剩余
+            p.next = right;
+        }
+        return head.next;//返回合并链表头节点
+    }
+}
+```
 #### 39、组合总和
 [组合总和](https://leetcode-cn.com/problems/combination-sum/) 
 ![](assets/5616a6cb.png)
@@ -168,6 +251,114 @@ class Solution {
     }
 }
 ```
+#### 50、跳跃游戏
+[LeetCode](https://leetcode-cn.com/problems/jump-game/)  
+```java
+1、回溯
+增加visit数组记录已经访问过的下标，提升效率  
+class Solution {
+    public boolean canJump(int[] nums) {
+        boolean [] visit = new boolean[nums.length];
+        return track(nums,0,visit);
+    }
+
+    public boolean track(int[] nums,int i,boolean[] visit){
+       if(i>=nums.length-1) return true;//已经跳到最后
+       if(nums[i]==0 && i<nums.length) return false;//到最后位置之前遇到0，则不会跳到最后
+       if(i+nums[i]>=nums.length-1) return true;//
+
+       for(int j=i+1;j<=i+nums[i] && j< nums.length;j++){
+           if(visit[j]) {
+               continue;//已经访问过
+           }
+            if(track(nums,j,visit)){//
+                return true;//
+            }
+            visit[j] = true;
+       }
+       return false;//下标i所有nums[i]种选择都已经试过，返回失败
+    }
+}
+2、动态规划
+
+```
+#### 51、N皇后
+[LeetCode](https://leetcode-cn.com/problems/n-queens/)  
+![](assets/fd23cd5e.png) 
+```java
+class Solution {
+  // 用于标记是否被列方向的皇后被攻击
+  int rows[];
+  // 用于标记是否被主对角线方向的皇后攻击
+  int hills[];
+  // 用于标记是否被主对角线方向的皇后攻击
+  int dales[];
+  int n;
+  // output
+  List<List<String>> output = new ArrayList();
+  // 皇后位置
+  int queens[];
+
+  //对于所有的主对角线有 行号 + 列号 = 常数，对于所有的次对角线有 行号 - 列号 = 常数”
+  public boolean isNotUnderAttack(int row, int col) {
+    int res = rows[col] + hills[row - col + n - 1] + dales[row + col];
+    return (res == 0) ? true : false;
+  }
+
+  public void placeQueen(int row, int col) {
+    queens[row] = col;//记录皇后的位置
+    rows[col] = 1;
+    hills[row - col + n-1] = 1;  // "hill" diagonals
+    dales[row + col] = 1;   //"dale" diagonals
+  }
+
+  public void removeQueen(int row, int col) {
+    queens[row] = 0;
+    rows[col] = 0;
+    hills[row - col + n-1] = 0;
+    dales[row + col] = 0;
+  }
+
+  public void addSolution() {
+    List<String> solution = new ArrayList<String>();
+    for (int i = 0; i < n; ++i) {
+      int col = queens[i];
+      StringBuilder sb = new StringBuilder();
+      for(int j = 0; j < col; ++j) sb.append(".");
+      sb.append("Q");
+      for(int j = 0; j < n - col - 1; ++j) sb.append(".");
+      solution.add(sb.toString());
+    }
+    output.add(solution);
+  }
+
+  public void backtrack(int row) {
+    if (row == n) {
+        addSolution();
+        return;
+    }
+    for (int col = 0; col < n; col++) {
+      if (isNotUnderAttack(row, col)) {
+        placeQueen(row, col);
+        backtrack(row + 1);
+        // backtrack
+        removeQueen(row, col);
+      }
+    }
+  }
+
+  public List<List<String>> solveNQueens(int n) {
+    this.n = n;
+    rows = new int[n];
+    hills = new int[2 * n - 1];
+    dales = new int[2 * n - 1];
+    queens = new int[n];
+
+    backtrack(0);
+    return output;
+  }
+}
+```
 #### 53、最大子序和
 [LeetCode](https://leetcode-cn.com/problems/maximum-subarray/submissions/)  
 比较简单的思路就是遍历每种情况，然后求出最大值。因为是连续的子序列，所以递归函数只有一次执行。
@@ -214,7 +405,43 @@ class Solution {
 }
 
 ```
-#### 56、插入区间  
+#### 56、合并区间
+[LeetCode](https://leetcode-cn.com/problems/merge-intervals/)  
+先按成员左区间排序，然后判断若有重叠则进行合并处理  
+![](assets/be21f207.png)
+```java
+class Solution {
+    public int[][] merge(int[][] intervals) {
+ 
+        List<int[]> output = new ArrayList<>();
+        
+        //先按左区间排序
+        Arrays.sort(intervals,(x,y)->x[0]-y[0]);//二维数组可以成员是对象，可以直接使用stream
+
+        for(int i=0;i<intervals.length;i++){
+            if(i==0){
+                output.add(intervals[i]);//第一个元素直接添加
+            }else{
+                int[] pre = output.get(output.size()-1);
+                int[] cur = intervals[i];
+                //有重叠
+                if(cur[0]<=pre[1] && cur[1]>= pre[0]){
+                    pre[0] = Math.min(cur[0],pre[0]);
+                    pre[1] = Math.max(cur[1],pre[1]);
+                }else{
+                    output.add(cur);
+                }
+            }
+        }
+        return output.toArray(new int[output.size()][2]);
+        //return output.toArray(new int[intervals.length][2]);
+
+    }
+}
+时间复杂度：主要是排序的复杂度O(nlogn)  
+空间复杂度：O(1)  
+```
+#### 57、插入区间  
 [LeetCode](https://leetcode-cn.com/problems/insert-interval/solution/cha-ru-qu-jian-by-leetcode/)  
 算法如下图所示：  
 先循环遍历找出所有左区间小于新输入左区间添加到output数组里，然后再依次和output数组最后一个元素比较，若有重叠就合并后添加到output。
@@ -255,6 +482,31 @@ class Solution {
         //return output.toArray(new int[output.size()]);
         return output.toArray(new int[output.size()][2]);
     }
+}
+```
+#### 77、组合 
+[LeetCode]()https://leetcode-cn.com/problems/combinations/  
+```java
+class Solution {
+    public List<List<Integer>> combine(int n, int k) {
+        List<List<Integer>> result = new ArrayList<>();
+
+        track(n,k,1,result,new ArrayList<>());
+        return result;
+    }
+
+    public void track(int n,int k,int index,List<List<Integer>> result,List<Integer> tmp){
+        if(tmp.size()==k){
+            result.add(new ArrayList<>(tmp));
+            return;
+        }
+        for(int i=index;i<=n;i++){
+            tmp.add(i);
+            track(n,k,i+1,result,tmp);
+            tmp.remove(tmp.size()-1);
+        }
+    }
+
 }
 ```
 ####  78、 子集
