@@ -174,8 +174,8 @@ Steam.generate(Math::random).limit(5);
 menu.steam().collect(counting());  
 menu.stream().collect(summingInt(Dish::getCalories));  
 Collectors.summingDouble  
-求最大值  
-menu.stream().collec(maxBy(comparing(Dish::getCalories)));  
+从所有菜单中找到Calorie最大的对象  
+Optional<Dish> fatDish = menu.stream().collec(maxBy(comparing(Dish::getCalories)));  
 连接字符串  
 joining()在内部使用StringBuilder  
 menu.stream().collect(joining());  
