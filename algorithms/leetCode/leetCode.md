@@ -1,3 +1,43 @@
+#### 1、两数之和 
+[LeetCode](https://leetcode-cn.com/problems/two-sum/)  
+```java
+//暴力
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        int[] res = new int[2];
+        for(int i=0;i<nums.length;i++){
+            for(int j=i+1;j<nums.length;j++){
+                if(nums[i]+nums[j]==target){
+                    res[0] = i;
+                    res[1] = j;
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+}
+//hash表
+class Solution {
+    public int[] twoSum(int[] nums, int target){
+        Map<Integer,Integer> tmp = new HashMap<>();
+
+        for(int i=0;i<nums.length;i++){
+            tmp.put(nums[i],i);
+        }
+
+        for(int i=0;i<nums.length;i++){
+            int r = target-nums[i];
+            if(tmp.containsKey(r) && i!=tmp.get(r)){
+                return new int[]{i,tmp.get(r)};
+            }
+        }
+
+         throw new IllegalArgumentException("No two sum solution");
+    }
+
+}
+```
 #### 17、电话号码的字母组合  
 [LeetCode](https://leetcode-cn.com/problems/letter-combinations-of-a-phone-number/)  
 //经典回溯问题  
@@ -34,6 +74,32 @@ class Solution {
             str.append(letter.charAt(i));
             track(digits,number,index+1,str,result);
             str.deleteCharAt(str.length()-1);
+        }
+    }
+}
+```
+#### 22、括号生成  
+[LeetCode](https://leetcode-cn.com/problems/generate-parentheses/submissions/)  
+![](assets/219e3fbd.png)
+```java
+1、回溯  
+class Solution {
+    public List<String> generateParenthesis(int n) {
+        List<String> res = new ArrayList<>();
+        track("",0,0,n,res);
+        return res;
+    }
+
+    public void track(String cur,int open,int close,int n,List<String> res){
+        if(cur.length()==2*n){
+            res.add(cur);
+            return;
+        }
+        if(open<n){//左括号不能大于n
+            track(cur+"(",open+1,close,n,res);//选择"("
+        }
+        if(open>close){//右括号不能大于左括号
+            track(cur+")",open,close+1,n,res);//选择")"
         }
     }
 }
@@ -484,8 +550,33 @@ class Solution {
     }
 }
 ```
+#### 75、颜色分类
+[LeetCode](https://leetcode-cn.com/problems/sort-colors/solution/yan-se-fen-lei-by-leetcode/)  
+三路快排  
+```java
+class Solution {
+    public void sortColors(int[] nums) {
+         int p0=0;
+         int cur=0;
+         int p2=nums.length-1;
+         while(cur<=p2){
+             if(nums[cur]==0){//等于0的和p0交换，是因为坐标的数字都扫描过了,所以p0和cur都++，
+                 int tmp = nums[p0];
+                 nums[p0++]=nums[cur];
+                 nums[cur++] =tmp;
+             }else if(nums[cur]==2){//等于2的和p2交换，p2--,因为和p2交换过来的数字还未扫描，故cur不能变
+                 int tmp = nums[p2];
+                 nums[p2--]=nums[cur];
+                 nums[cur] =tmp;
+             }else{
+                 cur++;
+             }
+         }
+    }
+}
+```
 #### 77、组合 
-[LeetCode]()https://leetcode-cn.com/problems/combinations/  
+[LeetCode](https://leetcode-cn.com/problems/combinations/  )
 ```java
 class Solution {
     public List<List<Integer>> combine(int n, int k) {

@@ -140,10 +140,30 @@ transactions.stream().map(Transaction::getValue).reduce(Integer::max).get();
 transactions.stream().map(Transaction::getValue).reduce(Integer::min).get();  
 
 原始类型流特化  
-IntStream,DoubleStream,LongStream  
+IntStream  
+DoubleStream  
+LongStream    
+把流转成数值流Stream<Integer>->IntStream    
 int calories = menu.stream().mapToInt(Dish::getCalories).sum();  
 IntStream intStream = menu.stream().MapToInt(Dish::getCalories);  
+intStream还支持max,min,average.   
+转回对象流IntStream->Stream<Integer>  
 Stream<Integer> stream = intStream.boxed();  
+
+// int[] ת Integer[]  
+Integer[] integers1 = Arrays.stream(data).boxed().toArray(Integer[]::new);  
+
+// List<Integer> ת Integer[]  
+Integer[] integers2 = list1.toArray(new Integer[0]);  
+
+// List<Integer> ת int[]  
+int[] arr1 = list1.stream().mapToInt(Integer::valueOf).toArray();  
+
+// Integer[] ת int[]  
+int[] arr2 = Arrays.stream(integers1).mapToInt(Integer::valueOf).toArray();  
+
+// Integer[] ת List<Integer>  
+List<Integer> list2 = Arrays.asList(integers1);  
 
 生成流  
 Stream.iterate(0,n->n+2).limit(10).forEach(System.out::printIn);  
