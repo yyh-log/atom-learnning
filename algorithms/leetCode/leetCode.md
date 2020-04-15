@@ -38,6 +38,494 @@ class Solution {
 
 }
 ```
+#### 两数相加  
+[LeetCode](https://leetcode-cn.com/problems/add-two-numbers/)  
+```java
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        int p = 0;//保留进位
+        ListNode h = new ListNode(0);//头节点
+        ListNode tmp = h;
+        while(l1!=null && l2!=null){
+            int v = (l1.val + l2.val + p)%10;//个位
+            p = (l1.val + l2.val + p)/10;//进位
+            tmp.next = new ListNode(v);
+            tmp = tmp.next;
+            l1 = l1.next;
+            l2 = l2.next;
+        }
+        if(l1==null && l2==null){//两个链表长度一样
+          if(p>0){//最后一位如果是0的话不用显示
+              tmp.next = new ListNode(p);
+          }
+        }else{
+            ListNode l = null;
+            if(l1!=null){
+                l = l1;
+            }else{
+                l = l2;
+            }
+            while(l!=null){//第一个个链表长度较长
+            int v = (l.val + p)%10;
+            p = (l.val + p)/10;
+            tmp.next = new ListNode(v);
+            tmp = tmp.next;
+            l = l.next;
+           }
+           if(p>0){//最后一位如果是0的话不用显示
+               tmp.next = new ListNode(p);
+           }
+        }
+        return h.next;
+    }
+}
+```
+#### 3、无重复字符串
+[LeetCode](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/submissions/)  
+```java
+1、暴力
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        int max = 0;
+        int sum = 0;
+        for(int i=0;i<s.length();i++){
+             String tmp = "";
+             sum = 0;
+        for(int j=i;j<s.length();j++){
+            if(!tmp.contains(s.substring(j,j+1))){
+                sum += 1;
+                tmp += s.substring(j,j+1);
+                if(sum>max){
+                    max = sum;
+                }
+            }else{
+                break;
+            }
+          }
+        }
+        return max;
+    }
+}
+2、动态规划
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        if(s.length()==0) return 0;
+        //动态规划
+        //设dp[i]以i结尾不重复的最大子串长度
+        int[] dp = new int[s.length()];
+        dp[0] = 1;
+        int max = 1;
+        String tmp = s.substring(0,1);
+        for(int i=1;i<s.length();i++){
+            String t = s.substring(i,i+1);
+            if(tmp.contains(t)){//重复字符,例如此时tmp=abc,而t=a为当前字符
+                int index = tmp.indexOf(t);//找出重复字符的位置,此时重复的a下标为0；找位置可以使用Map<String,Integer>空间换时间替代
+                tmp = tmp + t;//执行完这操作，此时tmp=abca
+                tmp = tmp.substring(index+1);//截取新的不重复的字符串，tmp=bca  
+                dp[i] = tmp.length();
+            }else{//若tmp不包含当前字符，则直接dp[i] = dp[i-1] + 1
+                tmp = tmp + t;
+                dp[i] = dp[i-1] + 1;
+            }
+            if(dp[i]>max){
+                max = dp[i];
+            }
+        }
+        return max;
+    }
+}
+```
+#### 4、寻找两个有序数组的中位数  
+[LeetCode](https://leetcode-cn.com/problems/median-of-two-sorted-arrays/)    
+```java
+
+```
+#### 5、最长回文子串
+[LeetCode](https://leetcode-cn.com/problems/longest-palindromic-substring/solution/zui-chang-hui-wen-zi-chuan-by-leetcode/)  
+1、最长公共子串  
+反转S1,使之变成S2。找到s1和S2的最长公共子串。  
+这是有缺陷的方法：  
+例如s1="caba" ,s2="abac",那么最长公共子串aba刚好是正确答案，即是回文子串。  
+例如s1="abacdfgdcaba",s2="abacdgfdcaba",那么公共子串为"abacd"显然不是回文子串。  
+![](assets/3c29d62c.png)  
+我们可以看到，当 S1 的其他部分中存在非回文子串的反向副本时，最长公共子串法就会失败。所谓的非回文子串的反向副本时即为上图绿色的部分。它和橙色的子串刚好成方向，只要字符串存在这样的现象，使用这样的算法就会出现错误。   
+为了纠正这一点，每当我们找到最长的公共子串的候选项时，都需要检查子串的索引是否与反向子串的原始索引相同。如果相同，那么我们尝试更新目前为止找到的最长回文子串；如果不是，我们就跳过这个候选项并继续寻找下一个候选。这句话可由下图来描述。  
+采用动态规划求最长公共子串时，dp[i][j]的定义：两个字符串最大公共子串在以s1字符串是以i结尾，在s2字符串是以j结尾的。所以算法执行完毕i和j的位置如图所示。如果最大公共子串是回文子串的话，那么j在原来正向字符串s1的位置j'加上最大公共子串长度-1必定等于i。非回文子串一定是不相等的。    
+![](assets/a87341c3.png)
+```java
+public String longestPalindrome(String s) {
+    if (s.equals(""))
+        return "";
+    String origin = s;
+    String reverse = new StringBuffer(s).reverse().toString();
+    int length = s.length();
+    int[][] arr = new int[length][length];
+    int maxLen = 0;
+    int maxEnd = 0;
+    for (int i = 0; i < length; i++)
+        for (int j = 0; j < length; j++) {
+            if (origin.charAt(i) == reverse.charAt(j)) {
+                if (i == 0 || j == 0) {
+                    arr[i][j] = 1;
+                } else {
+                    arr[i][j] = arr[i - 1][j - 1] + 1;
+                }
+            }
+            /*****************************/
+            if (arr[i][j] > maxLen) {
+                int beforeRev = length - 1 - j;
+                if (beforeRev + arr[i][j] - 1 == i) { //判断下标是否对应
+                    maxLen = arr[i][j];
+                    maxEnd = i;
+                }
+                /*************************************/
+            }
+        }
+    return s.substring(maxEnd - maxLen + 1, maxEnd + 1);
+}
+```
+2、直接动态规划法    
+![](assets/f146c138.png)  
+dp[i][j]定义表示子串s[i, j]是否为回文子串。  
+当s[i]==s[j]时,dp[i,j]=dp[i + 1][j - 1];。当i==0或者j==0另外考虑  
+```java
+public class Solution {
+
+    public String longestPalindrome(String s) {
+        int len = s.length();
+        if (len < 2) {
+            return s;
+        }
+
+        boolean[][] dp = new boolean[len][len];
+
+        // 初始化
+        for (int i = 0; i < len; i++) {
+            dp[i][i] = true;//对角线i==j，此时是单个字符串，必定是回文子串
+        }
+
+        int maxLen = 1;
+        int start = 0;
+
+        for (int j = 1; j < len; j++) {
+            for (int i = 0; i < j; i++) {
+
+                if (s.charAt(i) == s.charAt(j)) {
+                    if (j - i < 3) {//例如aba,bb必定是回文
+                        dp[i][j] = true;
+                    } else {
+                        dp[i][j] = dp[i + 1][j - 1];
+                    }
+                } else {
+                    dp[i][j] = false;
+                }
+
+                // 只要 dp[i][j] == true 成立，就表示子串 s[i, j] 是回文，此时记录回文长度和起始位置
+                if (dp[i][j]) {
+                    int curLen = j - i + 1;
+                    if (curLen > maxLen) {
+                        maxLen = curLen;
+                        start = i;//记录回文子串起点
+                    }
+                }
+            }
+        }
+        return s.substring(start, start + maxLen);
+    }
+}
+```
+3、中心扩散法  
+```java
+public class Solution {
+
+    public String longestPalindrome(String s) {
+        int len = s.length();
+        if (len < 2) {
+            return s;
+        }
+        int maxLen = 1;
+        String res = s.substring(0, 1);
+        // 中心位置枚举到 len - 2 即可
+        for (int i = 0; i < len - 1; i++) {
+            String oddStr = centerSpread(s, i, i);
+            String evenStr = centerSpread(s, i, i + 1);
+            String maxLenStr = oddStr.length() > evenStr.length() ? oddStr : evenStr;
+            if (maxLenStr.length() > maxLen) {
+                maxLen = maxLenStr.length();
+                res = maxLenStr;
+            }
+        }
+        return res;
+    }
+
+    private String centerSpread(String s, int left, int right) {
+        // left = right 的时候，此时回文中心是一个字符，回文串的长度是奇数
+        // right = left + 1 的时候，此时回文中心是一个空隙，回文串的长度是偶数
+        int len = s.length();
+        int i = left;
+        int j = right;
+        while (i >= 0 && j < len) {
+            if (s.charAt(i) == s.charAt(j)) {
+                i--;
+                j++;
+            } else {
+                break;
+            }
+        }
+        // 这里要小心，跳出 while 循环时，恰好满足 s.charAt(i) != s.charAt(j)，因此不能取 i，不能取 j
+        return s.substring(i + 1, j);
+    }
+}
+```
+#### 10 正则表达式
+[LeetCode](https://leetcode-cn.com/problems/regular-expression-matching/)  
+1 递归  
+递归算法最重要的思想就是把问题规模缩小，而且不管是什么规模，它的解法都是一样的，此时就可以从规模最小里计算出答案然后最终逆推获取原始规模问题的答案。  
+如果s第一个字符和p的第二个字符匹配，那么只要判断s.substring(1)和p.substring(1)就可以了。但是由于正则表达式*可以代表前面的字符出现0次或多次，所以这道题最关键的一点就是判断p的第二个字符是不是/*然后分多种情况讨论。  
+![](assets/198e7e92.png)
+```java
+class Solution {
+    public boolean isMatch(String s, String p) {
+
+        if(p.isEmpty()) return s.isEmpty();
+        
+        boolean first_match = (s.length()>0 && p.length()>0)
+                                    && (s.charAt(0)==p.charAt(0)||p.charAt(0)=='.');//判断s和p首字符是否相等
+        //三种情况
+        if(p.length()>1 && p.charAt(1)=='*'){ 
+            //p的第二个字符是*
+            //1 abcd和c*[abcd]，p直接加2,c出现0次的情况
+            //2 a[abcd]和a*bcd，s直接加1
+            return isMatch(s,p.substring(2))||first_match&&isMatch(s.substring(1),p);
+        }else{//3 a[bcd]和a[xxx]，首个字符相等，且p的第二个字符不是*，两种都向后加1
+            return first_match && isMatch(s.substring(1),p.substring(1));
+        }
+    }
+}
+```
+2、动态规划  
+自底向上时间复杂度O(SP)S为s的长度，P为的长度    
+d[i,j]定义s[i,s.length-1]和s[j,p.length-1]是否匹配，那么dp[0][0]即为题目答案。
+```java 
+public boolean isMatch(String text, String pattern) {
+    // 多一维的空间，因为求 dp[len - 1][j] 的时候需要知道 dp[len][j] 的情况，
+    // 多一维的话，就可以把 对 dp[len - 1][j] 也写进循环了
+    boolean[][] dp = new boolean[text.length() + 1][pattern.length() + 1];
+    // dp[len][len] 代表两个空串是否匹配了，"" 和 "" ，当然是 true 了。
+    dp[text.length()][pattern.length()] = true;
+
+    // 从 len 开始减少
+    for (int i = text.length(); i >= 0; i--) {
+        for (int j = pattern.length(); j >= 0; j--) {
+            // dp[text.length()][pattern.length()] 已经进行了初始化
+            if(i==text.length()&&j==pattern.length()) continue;
+            
+            boolean first_match = (i < text.length() && j < pattern.length()
+                                   && (pattern.charAt(j) == text.charAt(i) || pattern.charAt(j) == '.'));
+            if (j + 1 < pattern.length() && pattern.charAt(j + 1) == '*') {
+                dp[i][j] = dp[i][j + 2] || first_match && dp[i + 1][j];
+            } else {
+                dp[i][j] = first_match && dp[i + 1][j + 1];
+            }
+        }
+    }
+    return dp[0][0];
+}
+```
+#### 11 盛最多的水
+[LeetCode](https://leetcode-cn.com/problems/container-with-most-water/solution/sheng-zui-duo-shui-de-rong-qi-by-leetcode/)  
+![](assets/578eccb8.png)  
+双指针法  
+```java
+class Solution {
+    public int maxArea(int[] height) {
+        int maxArea = 0;
+        int i=0;
+        int j = height.length-1;
+        while(i<j){
+            maxArea = Math.max(maxArea,(j-i)*Math.min(height[i],height[j]));
+            //往高度比较高的方向移动
+            if(height[i]<height[j]){
+                i++;
+            }else{
+                j--;
+            }
+        }
+        return maxArea;
+    }
+}
+```
+#### 12 整数转罗马数字
+```java
+public class Solution {
+
+    public String intToRoman(int num) {
+        // 把阿拉伯数字与罗马数字可能出现的所有情况和对应关系，放在两个数组中
+        // 并且按照阿拉伯数字的大小降序排列，这是贪心选择思想
+        int[] nums = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        String[] romans = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+
+        StringBuilder stringBuilder = new StringBuilder();
+        int index = 0;
+        while (index < 13) {
+            // 特别注意：这里是等号
+            while (num >= nums[index]) {
+                // 注意：这里是等于号，表示尽量使用大的"面值"
+                stringBuilder.append(romans[index]);
+                num -= nums[index];
+            }
+            index++;
+        }
+        return stringBuilder.toString();
+    }
+}
+```
+#### 14、最长公共前缀
+[LeetCode]
+```java
+1、循环
+class Solution {
+public static String longestCommonPrefix(String[] strs) {
+        if (strs.length == 0) return "";
+        String prefix = strs[0];
+        for (int i = 1; i < strs.length; i++)
+            while (strs[i].indexOf(prefix) != 0) {
+                prefix = prefix.substring(0, prefix.length() - 1);
+                if (prefix.isEmpty()) return "";
+            }
+        return prefix;
+   }
+ }
+2、分治  
+class Solution {
+    public String longestCommonPrefix(String[] strs) {
+        if(strs.length==0) return "";
+        return dfs(strs,0,strs.length-1);
+    }
+
+    public String dfs(String[] strs,int low,int high){
+        if(low<high){
+            int mid = (low+high)/2;
+            String left = dfs(strs,low,mid);
+            if(left.isEmpty()) return "";//左序列没有公共前缀，直接方法空
+            String right = dfs(strs,mid+1,high);
+            if(right.isEmpty()) return "";//右序列没有公共前缀，直接方法空
+            return commonPrefix(left,right);
+        }
+        return strs[low];
+    }
+
+    public String commonPrefix(String left,String right) {
+    int min = Math.min(left.length(), right.length());       
+    for (int i = 0; i < min; i++) {
+        if ( left.charAt(i) != right.charAt(i) )
+            return left.substring(0, i);
+    }
+    return left.substring(0, min);
+}
+}
+
+```
+#### 15 三数之和  
+[LeetCode]()
+```java
+1、回溯
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        Arrays.sort(nums);//先排序，否则不好去重，如果不排序例如[-1,0,1]和[0,1,-1]很难再遍历过程中去重
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(nums,0,new ArrayList<>(),res,0,3);
+        return res;
+    }
+
+    void dfs(int[] nums,int index,List<Integer> tmp,List<List<Integer>> res,int sum,int n){
+        if(tmp.size()==n){
+            if(sum==0){
+                res.add(new ArrayList<>(tmp));
+            }
+            return;
+        }
+        List<Integer> visit = new ArrayList<>();
+        for(int i=index;i<nums.length;i++){
+            if(visit.contains(nums[i])) continue;
+            visit.add(nums[i]);
+            sum += nums[i];
+            tmp.add(nums[i]);
+            dfs(nums,i+1,tmp,res,sum,n);
+            tmp.remove(tmp.size()-1);
+            sum -= nums[i];
+        }
+    }
+}
+```
+2 双头指针法  
+![](assets/892a07a7.png)
+```java
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        if(nums.length<3) return res;
+        Arrays.sort(nums);//先排序
+       for(int i=0;i<nums.length;i++){
+           if(nums[i]>0) break;//因为排序，所以i后边的元素都大于，不可能和等于0的情况
+           if(i> 0 && nums[i]==nums[i-1]) continue;//和前面元素相等跳过，否则出现重复
+           int l = i+1;
+           int r = nums.length-1;
+           while(l<r){
+               int sum = nums[i] + nums[l] + nums[r];
+               if(sum==0){
+                   List<Integer> tmp = new ArrayList<>();
+                   tmp.add(nums[i]);
+                   tmp.add(nums[l]);
+                   tmp.add(nums[r]);
+                   res.add(tmp);
+                   while(l<r&&nums[l]==nums[l+1]) l++;//去重
+                   while(l<r&&nums[r]==nums[r-1]) r--;//去重
+                   l++;
+                   r--;
+               }
+               else if(sum<0){
+                   l++;
+               }else{
+                   r--;
+               }
+               
+           }
+       }
+       return res;
+    }
+}
+```
+#### 16 最接近的三数之和
+[LeetCode](https://leetcode-cn.com/problems/3sum-closest/)  
+```java
+class Solution {
+    public static int threeSumClosest(int[] nums, int target) {
+        Arrays.sort(nums);//先排序
+        int maxClose = nums[0] + nums[1] + nums[2];//初始值
+        for(int i=0;i<nums.length;i++){
+            if(i> 0 && nums[i]==nums[i-1]) continue;//和前面元素相等跳过，否则出现重复
+            int l = i+1;
+            int r = nums.length-1;
+            while(l<r){
+                int sum = nums[i] + nums[l] + nums[r];//xxx----target----xxx
+                if(sum==target) return sum;
+                if(Math.abs(sum-target)< Math.abs(maxClose-target)){
+                    maxClose = sum;
+                    while(l<r&&nums[l]==nums[l+1]) l++;//去重
+                    while(l<r&&nums[r]==nums[r-1]) r--;//去重
+                }
+                if(sum<target){
+                    l++;
+                }else{
+                    r--;
+                }
+            }
+        }
+        return maxClose;
+    }
+}
+```
 #### 17、电话号码的字母组合  
 [LeetCode](https://leetcode-cn.com/problems/letter-combinations-of-a-phone-number/)  
 //经典回溯问题  
@@ -75,6 +563,80 @@ class Solution {
             track(digits,number,index+1,str,result);
             str.deleteCharAt(str.length()-1);
         }
+    }
+}
+```
+#### 19、删除链表的倒数第n个节点
+[LeetCode](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/submissions/)  
+快慢指针  
+```java
+class Solution {
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode pre = null;
+        ListNode slow = head;//慢指针
+        ListNode fast = head;//快指针
+        int i = 0;
+        while(fast!=null&& i<n){//先让快指针走n步
+            i++;
+            fast = fast.next;
+        }
+        while(fast!=null){//然后快慢指针一起走，fast走到终点时slow即为倒数第n个节点位置
+            fast = fast.next;
+            pre = slow;
+            slow = slow.next;
+        }
+        if(pre!=null){
+            pre.next = slow.next;
+        }else{
+            //此时删除的是第一个节点
+            head = head.next;
+        }
+        return head;
+    }
+}
+```
+#### 20 有效括号
+[LeetCode](https://leetcode-cn.com/problems/valid-parentheses/submissions/)  
+```java
+class Solution {
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<>();
+        for(int i=0;i<s.length();i++){
+            char cur = s.charAt(i);
+            if(cur==')' || cur=='}' || cur==']'){
+                if(stack.isEmpty()) return false;
+                char top = stack.pop();
+                if(cur==')' && top!='(') return false;
+                if(cur=='}' && top!='{') return false;
+                if(cur==']' && top!='[') return false;
+            }else{
+                stack.push(cur);
+            }
+        }
+        return stack.isEmpty();
+    }
+}
+```
+#### 21、合并两个有序链表
+[LeetCode](https://leetcode-cn.com/problems/merge-two-sorted-lists/solution/he-bing-liang-ge-you-xu-lian-biao-by-leetcode/)  
+```java
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if (l1 == null) {
+            return l2;
+        }
+        else if (l2 == null) {
+            return l1;
+        }
+        else if (l1.val < l2.val) {
+            l1.next = mergeTwoLists(l1.next, l2);
+            return l1;
+        }
+        else {
+            l2.next = mergeTwoLists(l1, l2.next);
+            return l2;
+        }
+
     }
 }
 ```
@@ -146,6 +708,296 @@ class Solution {
         return head.next;//返回合并链表头节点
     }
 }
+```
+#### 24 两两交换链表中的节点
+[LeetCode](https://leetcode-cn.com/problems/swap-nodes-in-pairs/)   
+![](assets/99ad2094.png)
+要注意边界条件
+```java
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        if(head==null) return head;
+        ListNode l1 = head;
+        ListNode l2 = head.next;
+        ListNode pre = null;
+        ListNode t1;
+        ListNode t2;
+        while(l2!=null){
+            t1 = l1;
+            t2 = l2;
+            l1 = l2.next;
+            if(l2.next!=null && l2.next.next!=null){//边界条件
+                l2 = l2.next.next;
+            }else{
+                l2 = null;
+            }
+
+            if(pre==null){//此时是链表的头两个节点进行交换
+                t1.next = t2.next;
+                t2.next = t1;
+                head = t2;
+            }else{
+                t1.next = t2.next;
+                t2.next = t1;
+                pre.next = t2;
+            }
+            pre = t1;
+        }
+        return head;
+    }
+}
+```
+#### 25 K 个一组翻转链表
+[LeetCode](https://leetcode-cn.com/problems/reverse-nodes-in-k-group/solution/di-gui-java-by-reedfan-2/)  
+![](assets/1fdda1a8.png)
+```java
+class Solution {
+    public ListNode reverseKGroup(ListNode head, int k) {
+        int c = 0;
+        ListNode h = head;
+        ListNode pretail = null;
+        ListNode res = null;
+        while(h!=null){
+            c++;
+            ListNode tmp = h.next;
+            if(c==k){
+                c=0;
+                h.next = null;
+                ListNode curhead = reverse(head);//翻转
+                if(pretail!=null){
+                    pretail.next = curhead;
+                }else{
+                    res = curhead;//pretail为null,说明是整个链表的第一组k节点集合
+                }
+                pretail = head;//翻转后头结点变成尾节点
+                pretail.next = tmp;
+                head = tmp;//下一组的头结点
+            }
+            h = tmp;
+        }
+        return res;
+    }
+
+    //翻转链表
+    public ListNode reverse(ListNode node){
+        ListNode pre = null;
+        while(node!=null){
+            ListNode t = node.next;
+            node.next = pre;
+            pre = node;
+            node = t;
+        }
+        return pre;
+    }
+}
+```
+#### 26 删除排序数组中的重复项
+[LeetCode](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-array/)  
+双指针，i始终指向新数组最后一个元素
+```java
+public int removeDuplicates(int[] nums) {
+    if (nums.length == 0) return 0;
+    int i = 0;
+    for (int j = 1; j < nums.length; j++) {
+        if (nums[j] != nums[i]) {
+            i++;
+            nums[i] = nums[j];
+        }
+    }
+    return i + 1;
+}
+```
+#### 27 移除元素
+[LeetCode](https://leetcode-cn.com/problems/remove-element/)  
+```java
+class Solution {
+    public int removeElement(int[] nums, int val) {
+        int j =0;
+        int l = 0;
+        for(int i=0;i<nums.length;i++){
+            if(nums[i]!=val && l>0){//在第一个后边的不等于val的元素依次覆盖
+                nums[j++] = nums[i];
+            }
+            if(nums[i]==val){
+                if(l==0){//找到第一次出现val的下标
+                    j = i;
+                }
+                l++;
+            }
+        }
+        return nums.length-l;
+    }
+
+}
+```
+#### 29 两数相除
+[LeetCode](https://leetcode-cn.com/problems/divide-two-integers/)  
+```java
+public static int divide(int dividend, int divisor) {
+        boolean sign = (dividend > 0) ^ (divisor > 0);//判断是否符号相同
+        int result = 0;
+        if(dividend>0) {//统一转成负数
+            dividend = -dividend;
+        }
+        if(divisor>0) divisor = -divisor;
+        while(dividend <= divisor) {
+            int temp_result = -1;
+            int temp_divisor = divisor;
+            while(dividend <= (temp_divisor << 1)) {
+                if(temp_divisor <= (Integer.MIN_VALUE >> 1))break;
+                temp_result = temp_result << 1;
+                temp_divisor = temp_divisor << 1;
+            }
+            dividend = dividend - temp_divisor;
+            result += temp_result;
+        }
+        if(!sign) {//除数被除数符号不同
+            if(result <= Integer.MIN_VALUE) return Integer.MAX_VALUE;
+            result = - result;
+        }
+        return result;
+    }
+```
+#### 30 串联所有单词的子串
+[LeetCode](https://leetcode-cn.com/problems/substring-with-concatenation-of-all-words/solution/chuan-lian-suo-you-dan-ci-de-zi-chuan-by-powcai/)  
+![](assets/de18e1e2.png)
+```java
+1、暴力
+public List<Integer> findSubstring(String s, String[] words) {
+    List<Integer> res = new ArrayList<Integer>();
+    int wordNum = words.length;
+    if (wordNum == 0) {
+        return res;
+    }
+    int wordLen = words[0].length();
+    //HashMap1 存所有单词
+    HashMap<String, Integer> allWords = new HashMap<String, Integer>();
+    for (String w : words) {
+        int value = allWords.getOrDefault(w, 0);
+        allWords.put(w, value + 1);
+    }
+    //遍历所有子串
+    for (int i = 0; i < s.length() - wordNum * wordLen + 1; i++) {
+        //HashMap2 存当前扫描的字符串含有的单词
+        HashMap<String, Integer> hasWords = new HashMap<String, Integer>();
+        int num = 0;
+        //判断该子串是否符合
+        while (num < wordNum) {
+            String word = s.substring(i + num * wordLen, i + (num + 1) * wordLen);
+            //判断该单词在 HashMap1 中
+            if (allWords.containsKey(word)) {
+                int value = hasWords.getOrDefault(word, 0);
+                hasWords.put(word, value + 1);
+                //判断当前单词的 value 和 HashMap1 中该单词的 value
+                if (hasWords.get(word) > allWords.get(word)) {
+                    break;
+                }
+            } else {
+                break;
+            }
+            num++;
+        }
+        //判断是不是所有的单词都符合条件
+        if (num == wordNum) {
+            res.add(i);
+        }
+    }
+    return res;
+}
+
+2、滑动窗口
+class Solution {
+    public List<Integer> findSubstring(String s, String[] words) {
+        List<Integer> res = new ArrayList<>();
+        if (s == null || s.length() == 0 || words == null || words.length == 0) return res;
+        HashMap<String, Integer> map = new HashMap<>();
+        int one_word = words[0].length();
+        int word_num = words.length;
+        int all_len = one_word * word_num;
+        for (String word : words) {
+            map.put(word, map.getOrDefault(word, 0) + 1);
+        }
+        for (int i = 0; i < one_word; i++) {
+            int left = i, right = i, count = 0;
+            HashMap<String, Integer> tmp_map = new HashMap<>();
+            while (right + one_word <= s.length()) {
+                String w = s.substring(right, right + one_word);
+                tmp_map.put(w, tmp_map.getOrDefault(w, 0) + 1);
+                right += one_word;
+                count++;
+                while (tmp_map.getOrDefault(w, 0) > map.getOrDefault(w, 0)) {
+                    String t_w = s.substring(left, left + one_word);
+                    count--;
+                    tmp_map.put(t_w, tmp_map.getOrDefault(t_w, 0) - 1);
+                    left += one_word;
+                }
+                if (count == word_num) res.add(left);
+
+            }
+        }
+
+        return res;
+    }
+}
+3、优化版滑动窗口
+public static List<Integer> solution2(String s, String[] words) {
+        List<Integer> res = new ArrayList<>();
+        Map<String, Integer> wordsMap = new HashMap<>();
+        if (s.length() == 0 || words.length == 0) return res;
+        for (String word: words) {
+            // 主串s中没有这个单词，直接返回空
+            if (s.indexOf(word) < 0) return res;
+            // map中保存每个单词，和它出现的次数
+            wordsMap.put(word, wordsMap.getOrDefault(word, 0) + 1);
+        }
+        // 每个单词的长度， 总长度
+        int oneLen = words[0].length(), wordsLen = oneLen * words.length;
+        // 主串s长度小于单词总和，返回空
+        if (wordsLen > s.length()) return res;
+        // 只讨论从0，1，...， oneLen-1 开始的子串情况，
+        // 每次进行匹配的窗口大小为 wordsLen，每次后移一个单词长度，由左右窗口维持当前窗口位置
+        for (int i = 0; i < oneLen; ++i) {
+            // 左右窗口
+            int left = i, right = i, count = 0;
+            // 统计每个符合要求的word
+            Map<String, Integer> subMap = new HashMap<>();
+            // 右窗口不能超出主串长度
+            while (right + oneLen <= s.length()) {
+                // 得到一个单词
+                String word = s.substring(right, right + oneLen);
+                // 有窗口右移
+                right += oneLen;
+                // words[]中没有这个单词，那么当前窗口肯定匹配失败，直接右移到这个单词后面
+                if (!wordsMap.containsKey(word)) {
+                    left = right;
+                    // 窗口内单词统计map清空，重新统计
+                    subMap.clear();
+                    // 符合要求的单词数清0
+                    count = 0;
+                } else {
+                    // 统计当前子串中这个单词出现的次数
+                    subMap.put(word, subMap.getOrDefault(word, 0) + 1);
+                    ++count;
+                    // 如果这个单词出现的次数大于words[]中它对应的次数，又由于每次匹配和words长度相等的子串
+                    // 如 ["foo","bar","foo","the"]  "| foobarfoobar| foothe"
+                    // 第二个bar虽然是words[]中的单词，但是次数抄了，那么右移一个单词长度后 "|barfoobarfoo|the"
+                    // bar还是不符合，所以直接从这个不符合的bar之后开始匹配，也就是将这个不符合的bar和它之前的单词(串)全移出去
+                    while (subMap.getOrDefault(word, 0) > wordsMap.getOrDefault(word, 0)) {
+                        // 从当前窗口字符统计map中删除从左窗口开始到数量超限的所有单词(次数减一)
+                        String w = s.substring(left, left + oneLen);
+                        subMap.put(w, subMap.getOrDefault(w, 0) - 1);
+                        // 符合的单词数减一
+                        --count;
+                        // 左窗口位置右移
+                        left += oneLen;
+                    }
+                    // 当前窗口字符串满足要求
+                    if (count == words.length) res.add(left);
+                }
+            }
+        }
+        return res;
+    }
 ```
 #### 39、组合总和
 [组合总和](https://leetcode-cn.com/problems/combination-sum/) 
