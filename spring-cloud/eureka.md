@@ -384,3 +384,599 @@ private void updateDelta(Applications delta) {
         }
     }
 ```
+服务注册  
+注册接口地址为apps/app_name
+```java
+boolean register() throws Throwable {
+        logger.info(PREFIX + "{}: registering service...", appPathIdentifier);
+        EurekaHttpResponse<Void> httpResponse;
+        try {
+            httpResponse = eurekaTransport.registrationClient.register(instanceInfo);
+        } catch (Exception e) {
+            logger.warn(PREFIX + "{} - registration failed {}", appPathIdentifier, e.getMessage(), e);
+            throw e;
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info(PREFIX + "{} - registration status: {}", appPathIdentifier, httpResponse.getStatusCode());
+        }
+        return httpResponse.getStatusCode() == 204;
+    }
+
+```
+初始化定时任务  
+![](assets/8dc48bff.png)
+```java
+private void initScheduledTasks() {
+        if (clientConfig.shouldFetchRegistry()) {
+            //拉取注册表默认30秒
+            // registry cache refresh timer
+            int registryFetchIntervalSeconds = clientConfig.getRegistryFetchIntervalSeconds();
+            int expBackOffBound = clientConfig.getCacheRefreshExecutorExponentialBackOffBound();
+            scheduler.schedule(
+                    new TimedSupervisorTask(
+                            "cacheRefresh",
+                            scheduler,
+                            cacheRefreshExecutor,
+                            registryFetchIntervalSeconds,
+                            TimeUnit.SECONDS,
+                            expBackOffBound,
+                            new CacheRefreshThread()
+                    ),
+                    registryFetchIntervalSeconds, TimeUnit.SECONDS);
+        }
+        
+        //心跳定时器，默认30秒，续约接口地址为eureka/apps/app_name/instance_id
+        if (clientConfig.shouldRegisterWithEureka()) {
+            int renewalIntervalInSecs = instanceInfo.getLeaseInfo().getRenewalIntervalInSecs();
+            int expBackOffBound = clientConfig.getHeartbeatExecutorExponentialBackOffBound();
+            logger.info("Starting heartbeat executor: " + "renew interval is: {}", renewalIntervalInSecs);
+
+            // Heartbeat timer
+            scheduler.schedule(
+                    new TimedSupervisorTask(
+                            "heartbeat",
+                            scheduler,
+                            heartbeatExecutor,
+                            renewalIntervalInSecs,
+                            TimeUnit.SECONDS,
+                            expBackOffBound,
+                            new HeartbeatThread()
+                    ),
+                    renewalIntervalInSecs, TimeUnit.SECONDS);
+            //按需注册，定时刷新自身状态变化，如果状态改变重新注册
+            // InstanceInfo replicator
+            instanceInfoReplicator = new InstanceInfoReplicator(
+                    this,
+                    instanceInfo,
+                    clientConfig.getInstanceInfoReplicationIntervalSeconds(),
+                    2); // burstSize
+            //注册状态变化监听器
+            statusChangeListener = new ApplicationInfoManager.StatusChangeListener() {
+                @Override
+                public String getId() {
+                    return "statusChangeListener";
+                }
+
+                @Override
+                public void notify(StatusChangeEvent statusChangeEvent) {
+                    if (InstanceStatus.DOWN == statusChangeEvent.getStatus() ||
+                            InstanceStatus.DOWN == statusChangeEvent.getPreviousStatus()) {
+                        // log at warn level if DOWN was involved
+                        logger.warn("Saw local status change event {}", statusChangeEvent);
+                    } else {
+                        logger.info("Saw local status change event {}", statusChangeEvent);
+                    }
+                    instanceInfoReplicator.onDemandUpdate();
+                }
+            };
+
+            if (clientConfig.shouldOnDemandUpdateStatusChange()) {
+                applicationInfoManager.registerStatusChangeListener(statusChangeListener);
+            }
+            //启动按需注册定时任务
+            instanceInfoReplicator.start(clientConfig.getInitialInstanceInfoReplicationIntervalSeconds());
+        } else {
+            logger.info("Not registering with Eureka server per configuration");
+        }
+    }
+```
+![](assets/130006d3.png)  
+Eureka server源码解析  
+服务注册  
+接收服务心跳  
+服务剔除  
+服务下线  
+集群同步  
+获取注册表中服务实例信息  
+LeaseManager接口提供的方法如下所示：  
+```java
+public interface LeaseManager<T>{
+  void register();
+  boolean cancel();
+  boolean renew();
+}
+```
+LeaseManager接口管理的对象是lease，代表一个Eureka client服务实例信息的租约。Lease定义了租约的操作类型。分别是注册，下线，更新，租约默认有效时长为90秒。  
+PeerAwareInstanceRegistry继承了InstanceRegistry接口，在其基础上添加Eureka server集群同步的操作，其实现类PeerAwareInstanceRegistryImpl添加了对其peer节点的同步操作，是的Eureka server集群中的注册表信息保持一致。  
+服务注册  
+Eureka server接收client注册请求，执行注册动作如下:  
+AbstractInstanceRegistry：  
+```java
+public void register(InstanceInfo registrant, int leaseDuration, boolean isReplication) {
+        try {
+            read.lock();
+            Map<String, Lease<InstanceInfo>> gMap = registry.get(registrant.getAppName());//根据appname获取实例信息
+            REGISTER.increment(isReplication);
+            if (gMap == null) {
+                final ConcurrentHashMap<String, Lease<InstanceInfo>> gNewMap = new ConcurrentHashMap<String, Lease<InstanceInfo>>();
+                //如果有其他线程已经执行了，那么直接返回key对应的value即可
+                gMap = registry.putIfAbsent(registrant.getAppName(), gNewMap);
+                if (gMap == null) {
+                    gMap = gNewMap;
+                }
+            }
+            Lease<InstanceInfo> existingLease = gMap.get(registrant.getId());//获取对应的租约
+            // Retain the last dirty timestamp without overwriting it, if there is already a lease
+            if (existingLease != null && (existingLease.getHolder() != null)) {
+               //如果租约存在，比较server里面和实例传递过来的时间戳，区较大值更新
+                Long existingLastDirtyTimestamp = existingLease.getHolder().getLastDirtyTimestamp();
+                Long registrationLastDirtyTimestamp = registrant.getLastDirtyTimestamp();
+                logger.debug("Existing lease found (existing={}, provided={}", existingLastDirtyTimestamp, registrationLastDirtyTimestamp);
+
+                // this is a > instead of a >= because if the timestamps are equal, we still take the remote transmitted
+                // InstanceInfo instead of the server local copy.
+                if (existingLastDirtyTimestamp > registrationLastDirtyTimestamp) {
+                    logger.warn("There is an existing lease and the existing lease's dirty timestamp {} is greater" +
+                            " than the one that is being registered {}", existingLastDirtyTimestamp, registrationLastDirtyTimestamp);
+                    logger.warn("Using the existing instanceInfo instead of the new instanceInfo as the registrant");
+                    registrant = existingLease.getHolder();
+                }
+            } else {
+               //如果不存在，则是一次新的注册
+                // The lease does not exist and hence it is a new registration
+                synchronized (lock) {
+                    if (this.expectedNumberOfRenewsPerMin > 0) {
+                        // Since the client wants to cancel it, reduce the threshold
+                        // (1
+                        // for 30 seconds, 2 for a minute)
+                        this.expectedNumberOfRenewsPerMin = this.expectedNumberOfRenewsPerMin + 2;
+                        this.numberOfRenewsPerMinThreshold =
+                                (int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
+                    }
+                }
+                logger.debug("No previous lease information found; it is new registration");
+            }
+           //创建新的租约
+            Lease<InstanceInfo> lease = new Lease<InstanceInfo>(registrant, leaseDuration);
+            if (existingLease != null) {
+                lease.setServiceUpTimestamp(existingLease.getServiceUpTimestamp());
+            }
+            gMap.put(registrant.getId(), lease);
+            //添加最新注册队列，用于client增量式拉取
+            synchronized (recentRegisteredQueue) {
+                recentRegisteredQueue.add(new Pair<Long, String>(
+                        System.currentTimeMillis(),
+                        registrant.getAppName() + "(" + registrant.getId() + ")"));
+            }
+            // This is where the initial state transfer of overridden status happens
+            if (!InstanceStatus.UNKNOWN.equals(registrant.getOverriddenStatus())) {
+                logger.debug("Found overridden status {} for instance {}. Checking to see if needs to be add to the "
+                                + "overrides", registrant.getOverriddenStatus(), registrant.getId());
+                if (!overriddenInstanceStatusMap.containsKey(registrant.getId())) {
+                    logger.info("Not found overridden id {} and hence adding it", registrant.getId());
+                    overriddenInstanceStatusMap.put(registrant.getId(), registrant.getOverriddenStatus());
+                }
+            }
+            InstanceStatus overriddenStatusFromMap = overriddenInstanceStatusMap.get(registrant.getId());
+            if (overriddenStatusFromMap != null) {
+                logger.info("Storing overridden status {} from map", overriddenStatusFromMap);
+                registrant.setOverriddenStatus(overriddenStatusFromMap);
+            }
+
+            // Set the status based on the overridden status rules
+            InstanceStatus overriddenInstanceStatus = getOverriddenInstanceStatus(registrant, existingLease, isReplication);
+            registrant.setStatusWithoutDirty(overriddenInstanceStatus);
+
+             //设置服务上线时间，只有第一次设置有效
+            // If the lease is registered with UP status, set lease service up timestamp
+            if (InstanceStatus.UP.equals(registrant.getStatus())) {
+                lease.serviceUp();
+            }
+            registrant.setActionType(ActionType.ADDED);
+            recentlyChangedQueue.add(new RecentlyChangedItem(lease));
+            //设置注册最后时间
+            registrant.setLastUpdatedTimestamp();
+            //设置response缓存过期时间，这将用于eureka client全量获取注册表信息
+            invalidateCache(registrant.getAppName(), registrant.getVIPAddress(), registrant.getSecureVipAddress());
+            logger.info("Registered instance {}/{} with status {} (replication={})",
+                    registrant.getAppName(), registrant.getId(), registrant.getStatus(), isReplication);
+        } finally {
+            read.unlock();
+        }
+    }
+```
+接受心跳  
+```java
+public boolean renew(String appName, String id, boolean isReplication) {
+        RENEW.increment(isReplication);
+        Map<String, Lease<InstanceInfo>> gMap = registry.get(appName);
+        Lease<InstanceInfo> leaseToRenew = null;
+        if (gMap != null) {
+            leaseToRenew = gMap.get(id);
+        }
+        //租约不存在，直接返回
+        if (leaseToRenew == null) {
+            RENEW_NOT_FOUND.increment(isReplication);
+            logger.warn("DS: Registry: lease doesn't exist, registering resource: {} - {}", appName, id);
+            return false;
+        } else {
+            InstanceInfo instanceInfo = leaseToRenew.getHolder();
+            if (instanceInfo != null) {
+                // touchASGCache(instanceInfo.getASGName());
+                //根据覆盖状态规则得到服务实例的最终状态
+                InstanceStatus overriddenInstanceStatus = this.getOverriddenInstanceStatus(
+                        instanceInfo, leaseToRenew, isReplication);
+                if (overriddenInstanceStatus == InstanceStatus.UNKNOWN) {//如果得到的状态是unknow，则取消续约
+                    logger.info("Instance status UNKNOWN possibly due to deleted override for instance {}"
+                            + "; re-register required", instanceInfo.getId());
+                    RENEW_NOT_FOUND.increment(isReplication);
+                    return false;
+                }
+                if (!instanceInfo.getStatus().equals(overriddenInstanceStatus)) {
+                    logger.info(
+                            "The instance status {} is different from overridden instance status {} for instance {}. "
+                                    + "Hence setting the status to overridden status", instanceInfo.getStatus().name(),
+                                    instanceInfo.getOverriddenStatus().name(),
+                                    instanceInfo.getId());
+                    instanceInfo.setStatusWithoutDirty(overriddenInstanceStatus);
+
+                }
+            }
+            renewsLastMin.increment();//统计每分钟续约的次数，用于自我保护
+            leaseToRenew.renew();//更新续约的有效时间
+            return true;
+        }
+    }
+```
+服务剔除(发生网络异常的client剔除)  
+```java
+public void evict(long additionalLeaseMs) {
+        logger.debug("Running the evict task");
+
+        //自我保护机制
+        if (!isLeaseExpirationEnabled()) {
+            logger.debug("DS: lease expiration is currently disabled.");
+            return;
+        }
+
+        // We collect first all expired items, to evict them in random order. For large eviction sets,
+        // if we do not that, we might wipe out whole apps before self preservation kicks in. By randomizing it,
+        // the impact should be evenly distributed across all applications.
+        List<Lease<InstanceInfo>> expiredLeases = new ArrayList<>();
+        for (Entry<String, Map<String, Lease<InstanceInfo>>> groupEntry : registry.entrySet()) {
+            Map<String, Lease<InstanceInfo>> leaseMap = groupEntry.getValue();
+            if (leaseMap != null) {
+                for (Entry<String, Lease<InstanceInfo>> leaseEntry : leaseMap.entrySet()) {
+                    Lease<InstanceInfo> lease = leaseEntry.getValue();
+                    //判断是否过期，添加到过期列表
+                    if (lease.isExpired(additionalLeaseMs) && lease.getHolder() != null) {
+                        expiredLeases.add(lease);
+                    }
+                }
+            }
+        }
+
+        // To compensate for GC pauses or drifting local time, we need to use current registry size as a base for
+        // triggering self-preservation. Without that we would wipe out full registry.
+        int registrySize = (int) getLocalRegistrySize();
+        int registrySizeThreshold = (int) (registrySize * serverConfig.getRenewalPercentThreshold());
+        int evictionLimit = registrySize - registrySizeThreshold;//计算允许剔除的数量
+
+        int toEvict = Math.min(expiredLeases.size(), evictionLimit);
+        if (toEvict > 0) {
+            logger.info("Evicting {} items (expired={}, evictionLimit={})", toEvict, expiredLeases.size(), evictionLimit);
+            //随机删除
+            Random random = new Random(System.currentTimeMillis());
+            for (int i = 0; i < toEvict; i++) {
+                // Pick a random item (Knuth shuffle algorithm)
+                int next = i + random.nextInt(expiredLeases.size() - i);
+                Collections.swap(expiredLeases, i, next);
+                Lease<InstanceInfo> lease = expiredLeases.get(i);
+
+                String appName = lease.getHolder().getAppName();
+                String id = lease.getHolder().getId();
+                EXPIRED.increment();
+                logger.warn("DS: Registry: expired lease for {}/{}", appName, id);
+                internalCancel(appName, id, false);
+            }
+        }
+    }
+```
+evict方法中有很多限制：  
+自我保护时期不能剔除操作  
+过期操作是分批处理进行  
+服务随机剔除，防止同一时间同一个服务全部过期被剔除，造成程序崩溃  
+服务剔除任务是在一个EvictionTask内进行的，默认60秒一次。  
+自我保护机制：  
+```java
+@Override
+   public boolean isLeaseExpirationEnabled() {
+       if (!isSelfPreservationModeEnabled()) {
+           // The self preservation mode is disabled, hence allowing the instances to expire.
+           return true;
+       }
+       //最近一分钟续约的数目与小于设定阈值，则开启保护机制
+       return numberOfRenewsPerMinThreshold > 0 && getNumOfRenewsInLastMin() > numberOfRenewsPerMinThreshold;
+   }
+```
+服务下线  
+```java
+protected boolean internalCancel(String appName, String id, boolean isReplication) {
+        try {
+            read.lock();
+            CANCEL.increment(isReplication);
+            Map<String, Lease<InstanceInfo>> gMap = registry.get(appName);
+            Lease<InstanceInfo> leaseToCancel = null;
+            if (gMap != null) {
+                leaseToCancel = gMap.remove(id);//删除id的实例
+            }
+            synchronized (recentCanceledQueue) {//添加最近下线队列
+                recentCanceledQueue.add(new Pair<Long, String>(System.currentTimeMillis(), appName + "(" + id + ")"));
+            }
+            InstanceStatus instanceStatus = overriddenInstanceStatusMap.remove(id);
+            if (instanceStatus != null) {
+                logger.debug("Removed instance id {} from the overridden map which has value {}", id, instanceStatus.name());
+            }
+            if (leaseToCancel == null) {
+                CANCEL_NOT_FOUND.increment(isReplication);
+                logger.warn("DS: Registry: cancel failed because Lease is not registered for: {}/{}", appName, id);
+                return false;
+            } else {
+                leaseToCancel.cancel();
+                InstanceInfo instanceInfo = leaseToCancel.getHolder();
+                String vip = null;
+                String svip = null;
+                if (instanceInfo != null) {
+                    instanceInfo.setActionType(ActionType.DELETED);
+                    recentlyChangedQueue.add(new RecentlyChangedItem(leaseToCancel));//最近状态变更队列
+                    instanceInfo.setLastUpdatedTimestamp();
+                    vip = instanceInfo.getVIPAddress();
+                    svip = instanceInfo.getSecureVipAddress();
+                }
+                invalidateCache(appName, vip, svip);//设置缓存失效过期
+                logger.info("Cancelled instance {}/{} (replication={})", appName, id, isReplication);
+                return true;
+            }
+        } finally {
+            read.unlock();
+        }
+    }
+```
+获取注册表中服务实例信息  
+(下线过期时间90秒)
+```java
+public Applications getApplicationsFromMultipleRegions(String[] remoteRegions) {
+
+        boolean includeRemoteRegion = null != remoteRegions && remoteRegions.length != 0;
+
+        logger.debug("Fetching applications registry with remote regions: {}, Regions argument {}",
+                includeRemoteRegion, remoteRegions);
+
+        if (includeRemoteRegion) {
+            GET_ALL_WITH_REMOTE_REGIONS_CACHE_MISS.increment();
+        } else {
+            GET_ALL_CACHE_MISS.increment();
+        }
+        Applications apps = new Applications();
+        apps.setVersion(1L);
+        //从本地缓存获取全量注册列表
+        for (Entry<String, Map<String, Lease<InstanceInfo>>> entry : registry.entrySet()) {
+            Application app = null;
+
+            if (entry.getValue() != null) {
+                for (Entry<String, Lease<InstanceInfo>> stringLeaseEntry : entry.getValue().entrySet()) {
+                    Lease<InstanceInfo> lease = stringLeaseEntry.getValue();
+                    if (app == null) {
+                        app = new Application(lease.getHolder().getAppName());
+                    }
+                    app.addInstance(decorateInstanceInfo(lease));
+                }
+            }
+            if (app != null) {
+                apps.addApplication(app);
+            }
+        }
+        if (includeRemoteRegion) {
+            for (String remoteRegion : remoteRegions) {
+                RemoteRegionRegistry remoteRegistry = regionNameVSRemoteRegistry.get(remoteRegion);
+                ...
+            }
+        }
+        apps.setAppsHashCode(apps.getReconcileHashCode());
+        return apps;
+    }
+```
+获取增量注册列表  
+```java
+public Applications getApplicationDeltasFromMultipleRegions(String[] remoteRegions) {
+        if (null == remoteRegions) {
+            remoteRegions = allKnownRemoteRegions; // null means all remote regions.
+        }
+
+        boolean includeRemoteRegion = remoteRegions.length != 0;
+
+        if (includeRemoteRegion) {
+            GET_ALL_WITH_REMOTE_REGIONS_CACHE_MISS_DELTA.increment();
+        } else {
+            GET_ALL_CACHE_MISS_DELTA.increment();
+        }
+
+        Applications apps = new Applications();
+        apps.setVersion(responseCache.getVersionDeltaWithRegions().get());
+        Map<String, Application> applicationInstancesMap = new HashMap<String, Application>();
+        try {
+            write.lock();
+            Iterator<RecentlyChangedItem> iter = this.recentlyChangedQueue.iterator();//最新状态变更队列
+            logger.debug("The number of elements in the delta queue is :{}", this.recentlyChangedQueue.size());
+            while (iter.hasNext()) {
+                Lease<InstanceInfo> lease = iter.next().getLeaseInfo();
+                InstanceInfo instanceInfo = lease.getHolder();
+                logger.debug("The instance id {} is found with status {} and actiontype {}",
+                        instanceInfo.getId(), instanceInfo.getStatus().name(), instanceInfo.getActionType().name());
+                Application app = applicationInstancesMap.get(instanceInfo.getAppName());
+                if (app == null) {
+                    app = new Application(instanceInfo.getAppName());
+                    applicationInstancesMap.put(instanceInfo.getAppName(), app);
+                    apps.addApplication(app);
+                }
+                app.addInstance(decorateInstanceInfo(lease));
+            }
+
+            if (includeRemoteRegion) {
+                ...
+            }
+
+            Applications allApps = getApplicationsFromMultipleRegions(remoteRegions);
+            apps.setAppsHashCode(allApps.getReconcileHashCode());//计算一致性哈希码
+            return apps;
+        } finally {
+            write.unlock();
+        }
+    }
+```
+集群同步  
+PeerAwareInstanceRegistryImpl  
+Eureka server初始化本地注册表信息  
+```java
+从其他peer拉取注册表
+@Override
+    public int syncUp() {
+        // Copy entire entry from neighboring DS node
+        int count = 0;
+        //循环getRegistrySyncRetries次数不管从其他peer拉取注册表信息，默认5次
+        for (int i = 0; ((i < serverConfig.getRegistrySyncRetries()) && (count == 0)); i++) {
+            if (i > 0) {
+                try {
+                    Thread.sleep(serverConfig.getRegistrySyncRetryWaitMs());
+                } catch (InterruptedException e) {
+                    logger.warn("Interrupted during registry transfer..");
+                    break;
+                }
+            }
+            Applications apps = eurekaClient.getApplications();
+            for (Application app : apps.getRegisteredApplications()) {
+                for (InstanceInfo instance : app.getInstances()) {
+                    try {
+                        if (isRegisterable(instance)) {
+                            register(instance, instance.getLeaseInfo().getDurationInSecs(), true);
+                            count++;
+                        }
+                    } catch (Throwable t) {
+                        logger.error("During DS init copy", t);
+                    }
+                }
+            }
+        }
+        return count;
+    }
+```
+在eureka server初始化过程中并不会接收client的通信请求,在同步注册表结束后会打开openForTraffic接收client的请求    
+```java
+@Override
+    public void openForTraffic(ApplicationInfoManager applicationInfoManager, int count) {
+        // Renewals happen every 30 seconds and for a minute it should be a factor of 2.
+        //自我保护机制的统计参数
+        this.expectedNumberOfRenewsPerMin = count * 2;
+        this.numberOfRenewsPerMinThreshold =
+                (int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
+        logger.info("Got {} instances from neighboring DS node", count);
+        logger.info("Renew threshold is: {}", numberOfRenewsPerMinThreshold);
+        this.startupTime = System.currentTimeMillis();
+        if (count > 0) {
+            this.peerInstancesTransferEmptyOnStartup = false;
+        }
+        DataCenterInfo.Name selfName = applicationInfoManager.getInfo().getDataCenterInfo().getName();
+        boolean isAws = Name.Amazon == selfName;
+        if (isAws && serverConfig.shouldPrimeAwsReplicaConnections()) {
+            logger.info("Priming AWS connections for all replicas..");
+            primeAwsReplicas(applicationInfoManager);
+        }
+        logger.info("Changing status to UP");
+        applicationInfoManager.setInstanceStatus(InstanceStatus.UP);
+        super.postIn
+```
+同步  
+在本台eureka server接收到一个新的client通信请求并注册表实例更新的时候，需要同步到其他server上  
+```java
+@Override
+    public void register(final InstanceInfo info, final boolean isReplication) {
+        int leaseDuration = Lease.DEFAULT_DURATION_IN_SECS;
+        if (info.getLeaseInfo() != null && info.getLeaseInfo().getDurationInSecs() > 0) {
+            leaseDuration = info.getLeaseInfo().getDurationInSecs();
+        }
+        //执行的就是上边的Abstractinstanceregistry
+        super.register(info, leaseDuration, isReplication);
+        //同步到其他server
+        replicateToPeers(Action.Register, info.getAppName(), info.getId(), info, null, isReplication);
+    }
+  
+    private void replicateToPeers(Action action, String appName, String id,
+                                   InstanceInfo info /* optional */,
+                                   InstanceStatus newStatus /* optional */, boolean isReplication) {
+         Stopwatch tracer = action.getTimer().start();
+         try {
+             if (isReplication) {
+                 numberOfReplicationsLastMin.increment();
+             }
+             // If it is a replication already, do not replicate again as this will create a poison replication
+             if (peerEurekaNodes == Collections.EMPTY_LIST || isReplication) {
+                 return;
+             }
+             
+            //循环列表，peerEurekaNodes从配置文件中读取
+             for (final PeerEurekaNode node : peerEurekaNodes.getPeerEurekaNodes()) {
+                 // If the url represents this host, do not replicate to yourself.
+                 if (peerEurekaNodes.isThisMyUrl(node.getServiceUrl())) {
+                     continue;
+                 }
+                 //根据action不同进行不同的同步操作
+                 replicateInstanceActionsToPeers(action, appName, id, info, newStatus, node);
+             }
+         } finally {
+             tracer.stop();
+         }
+     }
+  
+     private void replicateInstanceActionsToPeers(Action action, String appName,
+                                                  String id, InstanceInfo info, InstanceStatus newStatus,
+                                                  PeerEurekaNode node) {
+         try {
+             InstanceInfo infoFromRegistry = null;
+             CurrentRequestVersion.set(Version.V2);
+             switch (action) {
+                 case Cancel:
+                     node.cancel(appName, id);
+                     break;
+                 case Heartbeat:
+                     InstanceStatus overriddenStatus = overriddenInstanceStatusMap.get(id);
+                     infoFromRegistry = getInstanceByAppAndId(appName, id, false);
+                     node.heartbeat(appName, id, infoFromRegistry, overriddenStatus, false);
+                     break;
+                 case Register:
+                     node.register(info);//自身也是client，发出注册请求到其他server中
+                     break;
+                 case StatusUpdate:
+                     infoFromRegistry = getInstanceByAppAndId(appName, id, false);
+                     node.statusUpdate(appName, id, newStatus, infoFromRegistry);
+                     break;
+                 case DeleteStatusOverride:
+                     infoFromRegistry = getInstanceByAppAndId(appName, id, false);
+                     node.deleteStatusOverride(appName, id, infoFromRegistry);
+                     break;
+             }
+         } catch (Throwable t) {
+             logger.error("Cannot replicate information to {} for action {}", node.getServiceUrl(), action.name(), t);
+         }
+     }
+    
+```
