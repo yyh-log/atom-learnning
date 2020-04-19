@@ -232,3 +232,54 @@ public class TurbineServer {
     }
 }
 ```
+```
+# hystrix.command.default和hystrix.threadpool.default中的default为默认CommandKey，CommandKey默认值为服务方法名。
+# 在properties配置中配置格式混乱，如果需要为每个方法设置不同的容错规则，建议使用yml文件配置。
+# Command Properties
+
+# Execution相关的属性的配置：
+# 隔离策略，默认是Thread, 可选Thread｜Semaphore
+hystrix.command.default.execution.isolation.strategy=THREAD
+#命令执行超时时间，默认1000ms，只在线程池隔离中有效。
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=1000
+# 执行是否启用超时，默认启用true，只在线程池隔离中有效。
+hystrix.command.default.execution.timeout.enabled=true
+# 发生超时是是否中断，默认true，只在线程池隔离中有效。
+hystrix.command.default.execution.isolation.thread.interruptOnTimeout=true
+# 最大并发请求数，默认10，该参数当使用ExecutionIsolationStrategy.SEMAPHORE策略时才有效。如果达到最大并发请求数，请求会被拒绝。
+# 理论上选择semaphore的原则和选择thread一致，但选用semaphore时每次执行的单元要比较小且执行速度快（ms级别），否则的话应该用thread。
+# semaphore应该占整个容器（tomcat）的线程池的一小部分。
+hystrix.command.default.execution.isolation.semaphore.maxConcurrentRequests=10
+# 如果并发数达到该设置值，请求会被拒绝和抛出异常并且fallback不会被调用。默认10。
+# 只在信号量隔离策略中有效，建议设置大一些，这样并发数达到execution最大请求数时，会直接调用fallback，而并发数达到fallback最大请求数时会被拒绝和抛出异常。
+hystrix.command.default.fallback.isolation.semaphore.maxConcurrentRequests=10
+
+# ThreadPool 相关参数
+# 并发执行的最大线程数，默认10
+hystrix.threadpool.default.coreSize=10
+# BlockingQueue的最大队列数，当设为-1，会使用SynchronousQueue，值为正时使用LinkedBlcokingQueue。
+# 该设置只会在初始化时有效，之后不能修改threadpool的queue size，除非reinitialising thread executor。默认-1。
+hystrix.threadpool.default.maxQueueSize=-1
+# 即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝。
+hystrix.threadpool.default.queueSizeRejectionThreshold=20
+# 线程存活时间，单位是分钟。默认值为1。
+hystrix.threadpool.default.keepAliveTimeMinutes=1
+# Fallback相关的属性 
+# 当执行失败或者请求被拒绝，是否会尝试调用fallback方法 。默认true 
+hystrix.command.default.fallback.enabled=true 
+
+# Circuit Breaker相关的属性 
+# 是否开启熔断器。默认true 
+hystrix.command.default.circuitBreaker.enabled=true 
+# 一个rolling window内最小的请求数。如果设为20，那么当一个rolling window的时间内（比如说1个rolling window是10毫秒）收到19个请求
+# 即使19个请求都失败，也不会触发circuit break。默认20
+hystrix.command.default.circuitBreaker.requestVolumeThreshold=20
+# 触发短路的时间值，当该值设为5000时，则当触发circuit break后的5000毫秒内都会拒绝远程服务调用，也就是5000毫秒后才会重试远程服务调用。默认5000
+hystrix.command.default.circuitBreaker.sleepWindowInMilliseconds=5000
+# 错误比率阀值，如果错误率>=该值，circuit会被打开，并短路所有请求触发fallback。默认50
+hystrix.command.default.circuitBreaker.errorThresholdPercentage=50
+# 强制打开熔断器
+hystrix.command.default.circuitBreaker.forceOpen=false
+# 强制关闭熔断器
+hystrix.command.default.circuitBreaker.forceClosed=false
+```

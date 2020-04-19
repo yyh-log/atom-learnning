@@ -1,5 +1,71 @@
 #### eureka client源码解析  
 ![](assets/94b47709.png)
+```
+#server
+eureka:
+  instance:
+    hostname: eureka-server-1
+    instance-id: eureka-server-1
+    #eureka是使用hostname进行注册的，使用IP进行注册
+    prefer-ip-address: false
+    appname: ${spring.application.name}
+    # 续约到期时间（默认90秒）
+    lease-expiration-duration-in-seconds: 30
+    # 续约更新时间间隔（默认30秒）
+    lease-renewal-interval-in-seconds: 15
+  server:
+    # 设为false，关闭自我保护
+    enable-self-preservation: false
+    #自我保护系数（默认0.85）
+    renewal-percent-threshold: 0.85
+    #禁用Eureka的ReadOnlyMap缓存
+    use-read-only-response-cache: false
+    # 清理无效节点间隔（单位毫秒，默认是60*1000）
+    eviction-interval-timer-in-ms: 3000
+    #注册信息缓存有效时长（s），默认180秒
+    response-cache-auto-expiration-in-seconds: 15
+    #注册信息缓存更新间隔（s），默认30秒
+    response-cache-update-interval-ms: 5000
+    #设置eureka server同步失败的等待时间，默认5分钟，在这期间它不向客户端提供服务注册信息
+    wait-time-in-ms-when-sync-empty: 5
+    #设置eureka server同步失败的重试次数，默认为5次
+    number-of-replication-retries: 5
+  client:
+    healthcheck:
+      enabled: true
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
+      defaultZone: http://eureka-server-2:${server.port}/eureka/,http://eureka-server-3:${server.port}/eureka/
+
+#client
+eureka:
+  instance:
+    #使用IP注册
+    prefer-ip-address: true
+    #注册到eureka上的唯一实例ID(不能与相同appName的其他实例重复)。
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    #主机名,不配置的时候讲根据操作系统的主机名来获取
+    hostname: ${spring.application.name}
+    #实例续约间隔时间(默认30秒)
+    lease-renewal-interval-in-seconds: 5
+    #实例超时时间，表示*秒后没有续约，Server就认为他不可用了，随之就会将其剔除。
+    lease-expiration-duration-in-seconds: 15
+    status-page-url-path: management/info
+    health-check-url-path: management/health
+  client:
+    #指示此实例是否应将其信息注册到eureka服务器以供其他服务发现，默认为false
+    register-with-eureka: true
+    #是否从Server获取注册信息
+    fetch-registry: true
+    #定时从Eureka Server拉取服务注册信息的间隔时间(默认30秒，单位：s/秒）
+    registry-fetch-interval-seconds: 5
+    #Eureka 集群地址
+    service-url:
+      defaultZone: ${eureka.server}
+```
+
+
 三个重要的配置类  
 //自身关键beans的配置和初始化  
 org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration  

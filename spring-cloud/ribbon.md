@@ -81,5 +81,27 @@ microservice-provider-user:
 microservice-provider-user:  
   ribbon:  
     listOfServers: localhost:8000,localhost:8001  
+```
+# 设置连接超时时间
+ribbon.ConnectTimeout=600
+# 设置读取超时时间
+ribbon.ReadTimeout=6000
+# 对所有操作请求都进行重试
+ribbon.OkToRetryOnAllOperations=true
+# 切换实例的重试次数
+ribbon.MaxAutoRetriesNextServer=2
+# 对当前实例的重试次数
+ribbon.MaxAutoRetries=1
 
+# 设置针对hello-service服务的连接超时时间
+hello-service.ribbon.ConnectTimeout=600
+# 设置针对hello-service服务的读取超时时间
+hello-service.ribbon.ReadTimeout=6000
+# 设置针对hello-service服务所有操作请求都进行重试
+hello-service.ribbon.OkToRetryOnAllOperations=true
+# 设置针对hello-service服务切换实例的重试次数
+hello-service.ribbon.MaxAutoRetriesNextServer=2
+# 设置针对hello-service服务的当前实例的重试次数
+hello-service.ribbon.MaxAutoRetries=1
+```
  
