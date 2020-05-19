@@ -1,0 +1,3 @@
+如果Redis被当做缓存使用，使用一致性哈希实现动态扩容缩容
+redis事务
+https://www.runoob.com/redis/redis-transactions.html

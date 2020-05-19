@@ -1,0 +1,20 @@
+连接
+zkcli.sh -eserver ip:port
+
+创建
+create [-s] [-e] path data acl
+-s:指定顺序节点
+-e:指定临时节点
+
+ls path [watch]
+查看指定节点所有的子节点
+
+获取指定节点的数据内容和属性信息
+get path [watch]
+
+设置数据内容
+set path data [version]
+
+删除
+delete path [version]
+

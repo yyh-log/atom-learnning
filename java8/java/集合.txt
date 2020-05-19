@@ -1,0 +1,86 @@
+ArrayList:
+底层是用数组实现的，继承AbstractList类，实现了List，RandomAccess，Cloneable和Serializable接口，非线程安全。
+默认大小为10，初始化的时候不指定大小时，只有在添加第一个元素时才会真正的创建底层数组
+每次扩容都会扩容到旧长度的1.5倍，再copy旧数组的值到新数组中
+内部实现了ListIterator接口，有着功能更强大的迭代器
+
+ListedList：
+LinkedList实现了List接口和Deque接口的，底层的双端链表结构使它支持高效的插入和删除操作，也具有队列的特性，非线程安全的
+getFirst()方法
+getLast()
+removeFirst
+removeLast
+addFirst
+addLast
+
+HashMap:
+底层数据结构是数组和链表加红黑树。
+一、构造函数有四个:
+HashMap(){};
+HashMap(int initialCapacity){};
+HashMap(int initialCapacity, float loadFactor){};
+HashMap(Map<? extends K, ? extends V> m){};
+二、put()方法
+根据哈希值计算索引、如果key为null的话直接存到了数组索引为0的位置
+链表长度大于等于8了，转换为红黑树
+如果存在hash值相等，key相等，新插入的值会覆盖旧值
+判断是否扩容
+三、get()方法
+如果key是null值直接取数组的第一个元，根据哈希值计算索引，判断当前索引上是链表还是红黑树
+四、扩容方法
+默认的初始容量是16
+默认的填充因子0.75f
+最大容量1 << 30
+阀值，超过这个数就要扩容，等于填充因子*容量，新的容量为原来的2倍
+初始化的容量会调用tableSizeFor()方法计算成2n次方
+
+ConcurrentHashMap
+1.8版本使用HashMap类似的数组加链表，链表过长转化为红黑树
+使用synchronized关键字和CAS操作保证并发问题，
+内部节点类里的属性使用volatile来声明
+弱一致性的，也就是有些迭代器的方法可能没办法获取最新值
+一、put()方法
+首先是一个循环尝试插入，如果插入的位置上是空的，直接CAS操作插入，如果有值则加synchronized锁，然后修改值，
+注意的是只锁住了单个索引上的链表或红黑树，也就是说除非是插入操作遇到了哈希碰撞才有加锁操作，否则是不会有加锁操作的，
+因为不同位置上的值的操作根本不可能有并发问题的，所以不需要加锁。
+二、get()方法
+整个方法就是直接进行哈希计算查找对应位置上的数据，因为前面说了Node节点里的字段都是用volatile修饰，所以取的时候一定会取到最新的值
+
+LinkedHashMap
+底层实现基本上和HashMap一样
+继承自HashMap中Node节点，新增了两个属性，before和after，这两个属性就是用来维护链表的插入顺序的，此外还有两个节点，头结点和尾节点，也是这个目的，这样就实现了一个双向链表
+会按照插入数据的顺序来遍历数据
+
+
+TreeMap
+继承了AbstractMap，实现了NavigableMap接口，底层是用红黑树实现的，也正是因为这个原因它也可以对键进行排序，而且插入、查找和删除的时间复杂度都是O(logn)
+一、构造方法
+TreeMap() {}
+TreeMap(Comparator<? super K> comparator) {}
+TreeMap(Map<? extends K, ? extends V> m) {}
+TreeMap(SortedMap<K, ? extends V> m) {}
+可以添加自定义比较器，设置排序规则
+直接接收一个TreeMap集合，排序规则也一并设置
+二、put()方法
+添加其实就是遍历树的操作，根据排序器的规则来遍历，然后找到对应的位置插入数据
+firstKey()/firstEntry()/lastKey()/lastEntry()方法
+lowerKey()/lowerEntry()/higherKey()/higherEntry()方法
+
+HashSet
+HashSet底层完全就是在HashMap的基础上包了一层，只不过存储的时候value是默认存储了一个Object的静态常量，取的时候也是只返回key
+如果哈希值和key都一样，就会直接拿新值覆盖旧值，而HashSet就是利用这个特性来保证唯一性
+
+LinkedHashSet
+LinkedHashSet就是在HashMap、HashSet和LinkedHashMap的基础上进行了下封装，没有加任何变化
+
+TreeSet
+底层是基于TreeMap来实现的，所以底层结构也是红黑树，因为他和HashSet不同的是不需要重写hashCode()和equals()方法，因为它去重是依靠比较器来去重，因为结构是红黑树，所以每次插入都会遍历比较来寻找节点插入位置，如果发现某个节点的值是一样的那就会直接覆盖
+
+NavigableMap
+SortedMap的子类
+
+
+
+
+
+

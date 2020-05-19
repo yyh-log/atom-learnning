@@ -1,0 +1,32 @@
+泛型类
+public class Pair<T>{ //T放在类名的后边
+  private T first;
+}
+
+泛型方法
+class ArrayAlg{
+
+ public static<T> T getMiddle(T...a){//修饰符的后边，返回值的前边
+   
+ }
+}
+调用泛型方法
+ArrayAlg.<String>.getMiddle("A","B","C");
+
+限定泛型范围
+classArrayAlg{
+  public static<T extends Comparable> T min(T[] a){//这样T的变量就可以使用compareTo的方法
+      
+  }
+}
+
+通配符类型
+Pair<? extends Employee> 
+Pair<? super Employee>
+
+无限定通配符
+Pair<?>
+
+
+//类型擦除 默认使用Object替换T
+//不能创建参数化类型的数组例如Pair<String>[] table = new Pair<String>[10];

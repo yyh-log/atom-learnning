@@ -1,0 +1,29 @@
+1、BeanPostProcessor
+
+2、BeanFactoryPostProcessor
+BeanFactoryPostProcessor是实现spring容器功能扩展的重要接口，例如修改bean属性值，实现bean动态代理等。很多框架都是通过此接口实现对spring容器的扩展，
+例如mybatis与spring集成时，只定义了mapper接口，无实现类，但spring却可以完成自动注入，是不是很神奇？ 本文将通过简单的例子，展现BeanFactoryPostProcessor的扩展能力。
+
+3、FactoryBean
+
+4、BeanFactory
+
+5、DefaultListableBeanDefinition
+
+6、BeanDefinitionRegistryPostProcessor
+
+7、BeanDefinitionRegistry
+
+8、parentBeanFactory
+
+ BeanWrapper 
+
+singletonObjects一级缓存
+earlySingletonObjects二级缓存
+singletonFactories三级缓存
+
+RootBeanDefinition
+
+bean的生命周期
+
+Class

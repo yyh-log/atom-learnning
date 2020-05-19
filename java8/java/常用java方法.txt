@@ -51,4 +51,6 @@ static <Response> ActionListener<Response> wrap(CheckedConsumer<Response, ? exte
 this.action.filters[i].apply(task, actionName, request, listener, this);
 LinkedList.getLast()
 Math floor¡¢ceil¡¢rint ¼° round
+System.arraycopy()
+Arrays.copyOf(elementData, newCapacity);
 
