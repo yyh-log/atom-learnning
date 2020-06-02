@@ -1,0 +1,10 @@
+Thread.yield()是否cpu的控制权
+
+memory = allcoate()
+initialize(memory);
+reference = memory;
+
+
+memory = allcoate()
+reference = memory;
+initialize(memory);

@@ -1,0 +1,135 @@
+
+ConcurrentLinkedQueue
+一个基于链表的无界非阻塞队列，并且是线程安全的，基于自旋+CAS
+head/tail 并非总是指向队列的头 / 尾节点 ，减少CAS更新tail节点的次数，就能提高入队的效率
+并不是每次出队时都更新head节点，当head节点里有元素时，直接弹出head节点里的元素，而不会更新head节点。只有当head节点里没有元素时，出队操作才会更新head节点。采用这种方式也是为了减少使用CAS更新head节点的消耗，从而提高出队效率
+
+
+ConcurrentLinkedDeque
+双端队列，ConcurrentLinkedDeque和ConcurrentLinkedQueue一样，采用了无锁算法，底层基于自旋+CAS的方式实现
+
+ArrayBlockingQueue
+用ReentrantLock来保证线程安全，一种有界阻塞队列，内部数组其实是一种环形数组，在初始构造的时候需要指定队列的容量
+队列的容量一旦在构造时指定，后续不能改变；
+插入元素时，在队尾进行；删除元素时，在队首进行；
+队列满时，调用特定方法插入元素会阻塞线程；队列空时，删除元素也会阻塞线程；
+支持公平/非公平策略，默认为非公平策略。
+/**
+ * 指定队列初始容量的构造器.
+ */
+public ArrayBlockingQueue(int capacity) {
+    this(capacity, false);
+}
+public ArrayBlockingQueue(int capacity, boolean fair) {}
+ArrayBlockingQueue的公平/非公平策略其实就是内部ReentrantLock对象的策略，此外构造时还创建了两个Condition对象。在队列满时，插入线程需要在notFull上等待；当队列空时，删除线程会在notEmpty上等待
+
+LinkedBlockingQueue
+LinkedBlockingQueue是一种近似有界阻塞队列，为什么说近似？因为LinkedBlockingQueue既可以在初始构造时就指定队列的容量，也可以不指定，如果不指定，那么它的容量大小默认为Integer.MAX_VALUE
+维护了两把锁——takeLock和putLock，不能指定公平/非公平策略（默认都是非公平）
+takeLock用于控制出队的并发，putLock用于入队的并发，提升吞吐量
+    /**
+     * 出队锁
+     */
+    private final ReentrantLock takeLock = new ReentrantLock();
+
+    /**
+     * 队列空时，出队线程在该条件队列等待
+     */
+    private final Condition notEmpty = takeLock.newCondition();
+
+    /**
+     * 入队锁
+     */
+    private final ReentrantLock putLock = new ReentrantLock();
+
+    /**
+     * 队列满时，入队线程在该条件队列等待
+     */
+    private final Condition notFull = putLock.newCondition();
+
+LinkedBlockingDeque
+利用ReentrantLock来保证线程安全，所有对队列的修改操作都需要先获取这把全局锁
+一种近似有界阻塞队列
+容量大小默认为Integer.MAX_VALUE
+
+DelayQueue
+一种阻塞队列，它实现了BlockingQueue接口，底层基于已有的PriorityBlockingQueue实现
+所有元素必须实现Delayed接口，只有当该对象的getDalay方法返回的剩余时间≤0时才会出队
+public interface Delayed extends Comparable<Delayed> {
+
+    /**
+     * 返回与此对象相关的剩余有效时间，以给定的时间单位表示.
+     */
+    long getDelay(TimeUnit unit);//return unit.convert(this.time - System.nanoTime(), TimeUnit.NANOSECONDS);
+}
+
+
+SynchronousQueue 
+内部不保存任何元素，也就是说它的容量为0，数据直接在配对的生产者和消费者线程之间传递，不会将数据缓冲到队列中
+其中非公平模式，基于内部数据结构——“栈”来实现，公平模式，基于内部数据结构——“队列”来实现
+对于公平策略，内部构造了一个TransferQueue对象，而非公平策略则是构造了TransferStack对象。这两个类都继承了内部类Transferer
+TransferQueue主要用于线程之间的数据交换，由于采用无锁算法，其性能一般比单纯的其它阻塞队列要高
+
+LinkedTransferQueue:
+transfer()方法，当有消费者线程阻塞等待时，调用transfer方法的生产者线程不会将元素存入队列，而是直接将元素传递给消费者
+是一种无界阻塞队列，底层基于单链表实现；
+中的结点有两种类型：数据结点、请求结点
+无锁算法实现
+
+PriorityBlockingQueue
+PriorityBlockingQueue与之前介绍的阻塞队列最大的不同之处就是：它是一种优先级队列，也就是说元素并不是以FIFO的方式出/入队，而是以按照权重大小的顺序出队；
+PriorityBlockingQueue是真正的无界队列（仅受内存大小限制），它不像ArrayBlockingQueue那样构造时必须指定最大容量，也不像LinkedBlockingQueue默认最大容量为Integer.MAX_VALUE；
+由于PriorityBlockingQueue是按照元素的权重进入排序，所以队列中的元素必须是可以比较的，也就是说元素必须实现Comparable接口；
+由于PriorityBlockingQueue无界队列，所以插入元素永远不会阻塞线程；
+PriorityBlockingQueue底层是一种基于数组实现的堆结构
+
+CopyOnWriteArrayList
+适用“读多写少”的情形，“写时复制”的思想
+需要修改（增/删/改）列表中的元素时，不直接进行修改，而是先将列表Copy，然后在新的副本上进行修改，修改完成之后，再将引用从原列表指向新列表
+读/写是不会冲突，写写才加锁
+Arrays.copyOf(elements, len + 1);    // 复制并创建新数组
+进行写操作的时候，内存里会同时存在两个array数组，如果数组内存占用的太大
+只能保证数据的最终一致性，不能保证数据的实时一致性——读操作读到的数据只是一份快照。所以如果希望写入的数据可以立刻被读到，那CopyOnWriteArrayList并不适合
+
+CopyOnWriteArraySet
+内部引用了一个CopyOnWriteArrayList对象，以“组合”方式，委托
+CopyOnWriteArraySet不允许含有重复元素，所以添加元素（add方法）时，内部调用了CopyOnWriteArrayList的addAllAbsent方法
+
+
+ConcurrentSkipListSet
+平均时间复杂度均为O(logn)
+引用了一个ConcurrentSkipListMap对象
+空间换时间
+跳表由很多层组成；
+每一层都是一个有序链表；
+对于每一层的任意结点，不仅有指向下一个结点的指针，也有指向其下一层的指针。
+
+ConcurrentSkipListMap
+
+Exchanger
+交换器,Thread1线程到达栅栏后，会首先观察有没其它线程已经到达栅栏，如果没有就会等待，
+如果已经有其它线程（Thread2）已经到达了，就会以成对的方式交换各自携带的信息，因此Exchanger非常适合用于两个线程之间的数据交换
+
+Phaser
+分阶段的任务的处理
+
+https://segmentfault.com/u/ressmix/articles
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,14 +1,14 @@
 // int[] ת Integer[]
 Integer[] integers1 = Arrays.stream(data).boxed().toArray(Integer[]::new);
 
+// Integer[] ת int[]
+int[] arr2 = Arrays.stream(integers1).mapToInt(Integer::valueOf).toArray();
+
 // List<Integer> ת Integer[]
 Integer[] integers2 = list1.toArray(new Integer[0]);
 
 // List<Integer> ת int[]
 int[] arr1 = list1.stream().mapToInt(Integer::valueOf).toArray();
-
-// Integer[] ת int[]
-int[] arr2 = Arrays.stream(integers1).mapToInt(Integer::valueOf).toArray();
 
 // Integer[] ת List<Integer>
 List<Integer> list2 = Arrays.asList(integers1);
