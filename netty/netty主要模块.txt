@@ -23,13 +23,97 @@ NioSctpServerChannel，异步的 Sctp 服务器端连接，这些通道涵盖了 UDP 和 TCP 网络 I
 
 【Selector】：
 Netty 基于 Selector 对象实现 I/O 多路复用，通过 Selector 一个线程可以监听多个连接的 Channel 事件。
+当向一个 Selector 中注册 Channel 后，Selector 内部的机制就可以自动不断地查询(Select) 这些注册的 Channel 是否有已就绪的 I/O 事件（例如可读，可写，网络连接完成等），这样程序就可以很简单地使用一个线程高效地管理多个 Channel 。
 
 【NioEventLoop】
+NioEventLoop 中维护了一个线程和任务队列，支持异步提交执行任务，线程启动时会调用 NioEventLoop 的 run 方法，执行 I/O 任务和非 I/O 任务
 
 【NioEventLoopGroup】：
+主要管理 eventLoop 的生命周期，可以理解为一个线程池，内部维护了一组线程，每个线程(NioEventLoop)负责处理多个 Channel 上的事件，而一个 Channel 只对应于一个线程
+
 
 【ChannelHandler】
+ChannelHandler 是一个接口，处理 I/O 事件或拦截 I/O 操作，并将其转发到其 ChannelPipeline(业务处理链)中的下一个处理程序。
+ChannelHandler 本身并没有提供很多方法，因为这个接口有许多的方法需要实现，方便使用期间，可以继承它的子类：
+ChannelInboundHandler 用于处理入站 I/O 事件。
+ChannelOutboundHandler 用于处理出站 I/O 操作。
+
 
 【ChannelHandlerContext】：
 
 【ChannelPipline】
+保存 ChannelHandler 的 List，用于处理或拦截 Channel 的入站事件和出站操作。
+ChannelPipeline 实现了一种高级形式的拦截过滤器模式，使用户可以完全控制事件的处理方式，以及 Channel 中各个的 ChannelHandler 如何相互交互。
+
+基本例子
+publicstaticvoidmain(String[] args) {
+
+       // 创建mainReactor
+
+       NioEventLoopGroup boosGroup = newNioEventLoopGroup();
+
+       // 创建工作线程组
+
+       NioEventLoopGroup workerGroup = newNioEventLoopGroup();
+
+ 
+
+       finalServerBootstrap serverBootstrap = newServerBootstrap();
+
+       serverBootstrap
+
+                // 组装NioEventLoopGroup
+
+               .group(boosGroup, workerGroup)
+
+                // 设置channel类型为NIO类型
+
+               .channel(NioServerSocketChannel.class)
+
+               // 设置连接配置参数
+
+               .option(ChannelOption.SO_BACKLOG, 1024)
+
+               .childOption(ChannelOption.SO_KEEPALIVE, true)
+
+               .childOption(ChannelOption.TCP_NODELAY, true)
+
+               // 配置入站、出站事件handler
+
+               .childHandler(newChannelInitializer<NioSocketChannel>() {
+
+                   @Override
+
+                   protectedvoidinitChannel(NioSocketChannel ch) {
+
+                       // 配置入站、出站事件channel
+
+                       ch.pipeline().addLast(...);
+
+                       ch.pipeline().addLast(...);
+
+                   }
+
+   });
+
+ 
+
+       // 绑定端口
+
+       intport = 8080;
+
+       serverBootstrap.bind(port).addListener(future -> {
+
+           if(future.isSuccess()) {
+
+               System.out.println(newDate() + ": 端口["+ port + "]绑定成功!");
+
+           } else{
+
+               System.err.println("端口["+ port + "]绑定失败!");
+
+           }
+
+       });
+
+}
