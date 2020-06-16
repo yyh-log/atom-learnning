@@ -1,0 +1,18 @@
+可靠性传输：
+滑动窗口
+超时重传 快速重传
+累积确认
+
+
+流量控制：
+滑动窗口
+接收方不断调整自己的接收窗口实现流量控制
+
+
+拥塞控制：
+慢开始（slow-start）
+拥塞避免（congestion-avoidance）
+快重传（fast retransmit）
+快恢复（fast recovery）
+
+HTTP1.0和HTPP1.1的区别 

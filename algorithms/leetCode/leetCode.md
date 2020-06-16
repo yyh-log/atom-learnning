@@ -281,7 +281,7 @@ public class Solution {
 [LeetCode](https://leetcode-cn.com/problems/regular-expression-matching/)  
 1 递归  
 递归算法最重要的思想就是把问题规模缩小，而且不管是什么规模，它的解法都是一样的，此时就可以从规模最小里计算出答案然后最终逆推获取原始规模问题的答案。  
-如果s第一个字符和p的第二个字符匹配，那么只要判断s.substring(1)和p.substring(1)就可以了。但是由于正则表达式*可以代表前面的字符出现0次或多次，所以这道题最关键的一点就是判断p的第二个字符是不是/*然后分多种情况讨论。  
+如果s第一个字符和p的第一个字符匹配，那么只要判断s.substring(1)和p.substring(1)就可以了。但是由于正则表达式*可以代表前面的字符出现0次或多次，所以这道题最关键的一点就是判断p的第二个字符是不是/*然后分多种情况讨论。  
 ![](assets/198e7e92.png)
 ```java
 class Solution {
@@ -481,8 +481,8 @@ class Solution {
                    res.add(tmp);
                    while(l<r&&nums[l]==nums[l+1]) l++;//去重
                    while(l<r&&nums[r]==nums[r-1]) r--;//去重
-                   l++;
-                   r--;
+                   l++;//左指针后移
+                   r--;//右指针前移
                }
                else if(sum<0){
                    l++;
@@ -639,6 +639,28 @@ class Solution {
 
     }
 }
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        ListNode h = new ListNode(0);
+        ListNode p = h;
+        while(l1!=null&&l2!=null){
+            if(l1.val<l2.val){
+                h.next = l1;
+                l1 = l1.next;
+            }else{
+                h.next = l2;
+                l2 = l2.next;
+            }
+            h = h.next;
+        }
+        if(l1!=null){
+            h.next = l1;
+        }else{
+            h.next =l2;
+        }
+        return p.next;
+    }
+}
 ```
 #### 22、括号生成  
 [LeetCode](https://leetcode-cn.com/problems/generate-parentheses/submissions/)  
@@ -708,6 +730,7 @@ class Solution {
         return head.next;//返回合并链表头节点
     }
 }
+复杂度为O(knlogk)
 ```
 #### 24 两两交换链表中的节点
 [LeetCode](https://leetcode-cn.com/problems/swap-nodes-in-pairs/)   
@@ -806,6 +829,19 @@ public int removeDuplicates(int[] nums) {
     }
     return i + 1;
 }
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        //双指针，index始终指向新数组最后一个元素
+        int index=1;
+        for(int i=1;i<nums.length;i++){
+            while(i<nums.length&&nums[i]==nums[i-1]) i++;
+            if(i<nums.length){
+                nums[index++] = nums[i];
+            }
+        }
+        return index;
+    }
+}
 ```
 #### 27 移除元素
 [LeetCode](https://leetcode-cn.com/problems/remove-element/)  
@@ -829,6 +865,18 @@ class Solution {
     }
 
 }
+//双指针
+public int removeElement(int[] nums, int val) {
+    int i = 0;
+    for (int j = 0; j < nums.length; j++) {
+        if (nums[j] != val) {
+            nums[i] = nums[j];
+            i++;
+        }
+    }
+    return i;
+}
+
 ```
 #### 29 两数相除
 [LeetCode](https://leetcode-cn.com/problems/divide-two-integers/)  
@@ -999,6 +1047,7 @@ public static List<Integer> solution2(String s, String[] words) {
         return res;
     }
 ```
+
 #### 39、组合总和
 [组合总和](https://leetcode-cn.com/problems/combination-sum/) 
 ![](assets/5616a6cb.png)
@@ -1026,6 +1075,64 @@ class Solution {
 	  tmp.remove(tmp.size()-1);//回归状态
    }
 }
+}
+```
+#### 34、排序
+```java
+int binary_search(int[] nums, int target) {
+    int left = 0, right = nums.length - 1; 
+    while(left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] < target) {
+            left = mid + 1;
+        } else if (nums[mid] > target) {
+            right = mid - 1; 
+        } else if(nums[mid] == target) {
+            // 直接返回
+            return mid;
+        }
+    }
+    // 直接返回
+    return -1;
+}
+
+int left_bound(int[] nums, int target) {
+    int left = 0, right = nums.length - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] < target) {
+            left = mid + 1;
+        } else if (nums[mid] > target) {
+            right = mid - 1;
+        } else if (nums[mid] == target) {
+            // 别返回，收缩左侧边界
+            right = mid - 1;
+        }
+    }
+    // 最后要检查 left 越界的情况
+    if (left >= nums.length || nums[left] != target)
+        return -1;
+    return left;
+}
+
+
+int right_bound(int[] nums, int target) {
+    int left = 0, right = nums.length - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] < target) {
+            left = mid + 1;
+        } else if (nums[mid] > target) {
+            right = mid - 1;
+        } else if (nums[mid] == target) {
+            // 别返回，收缩右侧边界
+            left = mid + 1;
+        }
+    }
+    // 最后要检查 right 越界的情况
+    if (right < 0 || nums[right] != target)
+        return -1;
+    return right;
 }
 ```
 #### 40、组合总和II
@@ -1099,6 +1206,22 @@ class Solution {
             step++;
         }
         return step;
+    }
+}
+class Solution {
+    public int jump(int[] nums) {
+        int length = nums.length;
+        int end = 0;
+        int maxPosition = 0; 
+        int steps = 0;
+        for (int i = 0; i < length - 1; i++) {
+            maxPosition = Math.max(maxPosition, i + nums[i]); 
+            if (i == end) {
+                end = maxPosition;
+                steps++;
+            }
+        }
+        return steps;
     }
 }
 ```

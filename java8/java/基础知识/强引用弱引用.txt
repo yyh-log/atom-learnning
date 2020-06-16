@@ -1,0 +1,26 @@
+强引用
+最普遍的引用，当内存空间不足，Java虚拟机宁愿抛出OutOfMemoryError错误，使程序异常终止，也不回收这种对象
+
+弱引用
+用java.lang.ref.WeakReference类来表示
+WeakReference<String> sr = new WeakReference<String>(new String("hello"));
+当JVM进行垃圾回收时，无论内存是否充足，都会回收被弱引用关联的对象
+
+软引用
+用java.lang.ref.SoftReference类来表示，只有在内存不足的时候JVM才会回收该对象
+这个特性很适合用来实现缓存：比如网页缓存、图片缓存等
+
+
+虚引用
+java.lang.ref.PhantomReference类表示
+如果一个对象与虚引用关联，则跟没有引用与之关联一样，在任何时候都可能被垃圾回收器回收。虚引用主要用来跟踪对象被垃圾回收的活动
+虚引用必须和引用队列关联使用
+当垃圾回收器准备回收一个对象时，如果发现它还有虚引用，就会把这个虚引用加入到与之关联的引用队列中。程序可以通过判断引用队列中是否已经加入了虚引用，来了解被引用的对象是否将要被垃圾回收
+ReferenceQueue<String> queue = new ReferenceQueue<String>();
+       
+PhantomReference<String> pr = new PhantomReference<String>(new String("hello"), queue);
+       
+System.out.println(pr.get());
+
+
+

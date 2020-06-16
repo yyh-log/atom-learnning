@@ -1,0 +1,6 @@
+https://www.jianshu.com/p/f30ee2346f9f
+CPU 密集型：
+CPU 核数（逻辑）+ 1 
+
+I/O密集型：
+最佳线程数 = (1/CPU利用率) = 1 + (I/O耗时/CPU耗时)

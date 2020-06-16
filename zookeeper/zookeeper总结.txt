@@ -1,0 +1,76 @@
+1、zookeeper是什么？
+zookeeper是一个分布式协调工具，它提供了很多分布式解决方案，例如发布订阅，负载均衡，命名服务，集群管理，master选举，分布式锁和分布式队列等功能。
+可以保证分布式一致性特性：
+顺序一致性：同一个客户端发起的请求都会按照请求顺序应用到zk服务里去。
+原子性：要么所有zk集群服务都成功应用了一个事务，要么全部失败，不会出现一些成功一些失败的情况。
+单一视图：无论客户端连接到那个zk server，得到的数据都是一致的。
+可靠性：
+实时性：
+
+常见概念：
+zookeeper服务有三种角色：leader，follower,observer
+会话(session)
+数据节点znode
+版本：每一个znode都会有三个版本，version(当前znode版本)，cversion(子节点版本),aversion(当前znode acl版本)
+watcher：设置监听器，有getData,getChildren,exist三种
+acl:权限控制
+
+2、zab协议
+https://www.jianshu.com/p/3fec1f8bfc5f
+https://www.jianshu.com/p/2bceacd60b8a
+1）zab协议全称是 Zookeeper Atomic Broadcast （Zookeeper原子广播）
+Zookeeper 是通过 Zab 协议来保证分布式事务的最终一致性。它是一种支持崩溃恢复的原子广播协议
+分为两个基本的模式：消息广播和崩溃恢复
+消息广播：
+1)接收事务请求，转发给leader
+2)生成事务ID(即ZXID)，严格递增
+3)事务Proposal放入Follower队列
+4)Follower事务日志的形式写入本地，返回ack
+5)过半的Follower服务器已经反馈Ack，广播Commit消息给follower，同时Leader自身也会完成对事务的提交
+6)Follower提交事务
+
+崩溃恢复：
+Leader服务器出现崩溃或者由于网络原因进入崩溃恢复模式
+包括选举和数据恢复两个部分：
+1)FastLeaderElection：选举算法
+syid —— zk服务器唯一ID
+zxid ——  最新事务ID:高32位是Leader的epoch，从1开始，每次选出新的Leader，epoch加一,低32位为该epoch内的序号，每次epoch变化，都将低32位的序号重置
+服务有LOOKING 、FOLLOWING 、LEADING 、OBSERVING四种状态
+投票过程：
+1)给自己投票，然后广播出去
+2)接收外部投票
+3)更新自己的投票，根据选票logicClock -> zxid -> sid依次判断
+4)统计投票，超过半数即选举成功
+5)更新服务状态LEADING或FOLLOWING
+
+2)恢复
+Leader根据lastZxid决定如何同步数据
+follower的zxid小于leader的zxid，计算差值进行数据同步
+follower的zxid大于leader的zxid,进行回滚
+
+3)paxos算法
+https://blog.csdn.net/wolf_love666/article/details/92832811
+Paxos算法是解决分布式一致的算法，有三种角色：Proposer (提议者),Acceptor（接受者），Learners（记录员）
+Proposer提议者：只要Proposer发的提案Propose被半数以上的Acceptor接受，Proposer就认为该提案例的value被选定了。
+Acceptor接受者：只要Acceptor接受了某个提案，Acceptor就认为该提案例的value被选定了
+learner记录员：Acceptor告诉Learner哪个value就是提议者的提案被选定，Learner就认为哪个value被选定。
+
+3、应用场景
+数据发布订阅：这要设置getData监听事件即可
+集群管理：
+master选举：
+分布式锁：/exclusive_lock/lock创建一个同名临时节点，只有一个能创建成功即获得锁，没有获得锁的客户端需要设置监听器；释放锁即删掉临时节点即可。
+共享锁：创建临时顺序节点，读锁名称为xxx-read-0001，写锁节点名称xxx-write-0001，如果自己的序号最小即获得锁，如果有比自己序号小的且都是读锁的话，那么自己能获得读锁，不能获得写锁
+如果自己是写锁的话，只要有序号比自己小的那么自己都要阻塞。
+分布式队列：
+在路径/queue/下创建临时顺序节点，调用/queue/的getChildren()监听事件获取所有的子节点序号，如果自己是最小的即立刻执行任务
+如果并非最小的，设置比自己小的最后一个自己点exist事件
+
+5、raft算法
+
+
+
+
+
+
+

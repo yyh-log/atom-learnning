@@ -7,8 +7,8 @@ zuul是spring cloud的网关组件，集成ribbon,hystrix等组件，包含一�
 ```
 启动类加上@EnableZuulProxy  
 zuul暴露两个端点  
-* /routes:返回路由映射
-* /filters：返回设置过滤器
+* /routes:返回路由映射http://127.0.0.1:8088/actuator/routes
+* /filters：返回设置过滤器http://127.0.0.1:8088/actuator/filters
 #### 路由配置：  
 ```
 //简单配置
@@ -40,7 +40,7 @@ zuul:
 //访问zuul的/path-a/**就会转发到本地/path-b/**
 ```
 #### 回退
-继承FallbackProvider
+要想要为zuul添加回退，需继承FallbackProvider，可以指定为哪个微服务提供回退
 ```java
 @Component
 public class MyFallbackProvider implements FallbackProvider {
@@ -109,7 +109,7 @@ Zuul中定义了四种标准过滤器类型，这些过滤器类型对应于请�
 * (3) POST：这种过滤器在路由到微服务以后执行。这种过滤器可用来为响应添加标准的HTTP Header、收集统计信息和指标、将响应从微服务发送给客户端等。
 * (4) ERROR：在其他阶段发生错误时执行该过滤器。  
 
-两个重要的过滤器  
+两个重要默认集成的过滤器  
 * (1) RibbonRoutingFilter：该过滤器使用Ribbon，Hystrix和可插拔的HTTP客户端发送请求。serviceId在RequestContext.getCurrentContext().get("serviceId") 中。该过滤器可使用不同的HTTP客户端，例如Apache HttpClient：默认的HTTP客户端
 Squareup OkHttpClient v3：如需使用该客户端，需保证com.squareup.okhttp3的依赖在classpath中，并设置ribbon.okhttp.enabled = true 。
 Netflix Ribbon HTTP client：设置ribbon.restclient.enabled = true 即可启用该HTTP客户端。需要注意的是，该客户端有一定限制，例如不支持PATCH方法，另外，它有内置的重试机制。

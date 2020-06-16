@@ -1,4 +1,5 @@
 
+
 ![](assets/6e8316eb.png)  
 maven配置  
 ```
@@ -93,7 +94,6 @@ class FallBackFactory implements FallbackFactory<FeignHttpClient>{
 }
 ```
 #### hystrix监控
-1、hystrix.stream  
 ```java
 <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -128,6 +128,8 @@ management:
       exposure:
         include: '*'  #开放所有页面节点  默认只开启了health、info两个节点
 ```
+上诉配置后启动项目，访问http://127.0.0.1:8085/hystrix可以打开Hystrix Dashboard主页  
+访问http://127.0.0.1:8085/actuator/hystrix.stream可以输出监控数据，一开始监控数据可能为空，通过下面方式产生监控数据  
 hystrixCommand触发hystrix监控
 ```java
 @SpringBootApplication
@@ -168,7 +170,7 @@ public class HystrixServer {
 }
 ```
 2 turbine
-
+使用turbine可以监控多个微服务，需要在配置文件配置需要监控哪几个微服务    
 ```
 <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -184,11 +186,6 @@ public class HystrixServer {
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 ```
-* turbine.appConfig ：配置Eureka中的serviceId列表，表明监控哪些服务
-* turbine.aggregator.clusterConfig ：指定聚合哪些集群，多个使用”,”分割，默认为default。可使用http://.../turbine.stream?cluster={clusterConfig之一}访问
-* turbine.clusterNameExpression ： 1. clusterNameExpression指定集群名称，默认表达式appName；此时：turbine.aggregator.clusterConfig需要配置想要监控的应用名称；2. 当clusterNameExpression: default时，turbine.aggregator.clusterConfig可以不写，因为默认就是default；3. 当clusterNameExpression: metadata[‘cluster’]时，假设想要监控的应用配置了eureka.instance.metadata-map.cluster: ABC，则需要配置，同时turbine.aggregator.clusterConfig: ABC
-* turbine.combine-host-port参数设置为true，可以让同一主机上的服务通过主机名与端口号的组合来进行区分，默认情况下会以host来区分不同的服务，这会使得在本机调试的时候，本机上的不同服务聚合成一个服务来统计。
-
 application.yml
 ```
 server:
@@ -220,6 +217,11 @@ turbine:
 #  instanceUrlSuffix:
 #      default: actuator/hystrix.stream    #key是clusterConfig集群的名字，value是hystrix监控的后缀，springboot2.0为actuator/hystrix.stream
 ```
+* turbine.appConfig ：配置Eureka中的serviceId列表，表明监控哪些服务
+* turbine.aggregator.clusterConfig ：指定聚合哪些集群，多个使用”,”分割，默认为default。可使用http://.../turbine.stream?cluster={clusterConfig之一}访问
+* turbine.clusterNameExpression ： 1. clusterNameExpression指定集群名称，默认表达式appName；此时：turbine.aggregator.clusterConfig需要配置想要监控的应用名称；2. 当clusterNameExpression: default时，turbine.aggregator.clusterConfig可以不写，因为默认就是default；3. 当clusterNameExpression: metadata[‘cluster’]时，假设想要监控的应用配置了eureka.instance.metadata-map.cluster: ABC，则需要配置，同时turbine.aggregator.clusterConfig: ABC
+* turbine.combine-host-port参数设置为true，可以让同一主机上的服务通过主机名与端口号的组合来进行区分，默认情况下会以host来区分不同的服务，这会使得在本机调试的时候，本机上的不同服务聚合成一个服务来统计。  
+
 启动
 ```java
 @SpringBootApplication

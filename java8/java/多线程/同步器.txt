@@ -1,0 +1,26 @@
+CountDownLatch 
+CountDownLatch 的同步功能是基于 AQS 实现的，CountDownLatch 使用 AQS 中的 state 成员变量作为计数器。
+在 state 不为0的情况下，凡是调用 await 方法的线程将会被阻塞，并被放入 AQS 所维护的同步队列中进行等待。
+当有一个线程调用 countDown 方法，就将计数器 state--。当 state 被减至0时，队列中的节点就会按照 FIFO 顺序被唤醒，被阻塞的线程即可恢复运行
+
+
+CyclicBarrier 
+在重入锁 ReentrantLock 的基础上实现的。
+调用 Condition 的 await 方法进入等待状态。在最后一个线程进入 CyclicBarrier await 方法后，该线程将会调用 Condition 的 signalAll 方法唤醒所有处于等待状态中的线程
+
+
+AQS
+
+ReentrantLock
+ReentrantLock类使用AQS同步状态state来保存锁重复持有的次数
+
+ReentrantReadWriteLock
+使用AQS同步状态state中的16位来保存写锁持有的次数，剩下的16位用来保存读锁的持有次数。
+WriteLock的构建方式同ReentrantLock。ReadLock则通过使用acquireShared方法来支持同时允许多个读线程
+在线程持有读锁的情况下，该线程不能取得写锁(因为获取写锁的时候，如果发现当前的读锁被占用，就马上获取失败，不管读锁是不是被当前线程持有)。
+在线程持有写锁的情况下，该线程可以继续获取读锁（获取读锁时如果发现写锁被占用，只有写锁没有被当前线程占用的情况才会获取失败）
+
+Semaphore
+Semaphore类（信号量）使用AQS同步状态state来保存信号量的当前计数。
+它里面定义的acquireShared方法会减少计数，或当计数为非正值时阻塞线程；tryRelease方法会增加计数，在计数为正值时还要解除线程的阻塞
+

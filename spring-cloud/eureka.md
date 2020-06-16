@@ -109,6 +109,7 @@ public class Application {
         instancesMap = new ConcurrentHashMap<String, InstanceInfo>();
         shuffledInstances = new AtomicReference<List<InstanceInfo>>();
     }
+DiscoveryClient  
 
 Discovery构造函数
 @Inject

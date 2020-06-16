@@ -1,0 +1,10 @@
+1、什么是SPI
+SPI ，全称为 Service Provider Interface，是一种服务发现机制,是Java提供的一套用来被第三方实现或者扩展的API。它通过在ClassPath路径下的META-INF/services文件夹查找文件，自动加载文件里所定义的类。
+这一机制为很多框架扩展提供了可能，比如在Dubbo、JDBC中都使用到了SPI机制。我们先通过一个很简单的例子来看下它是怎么用的
+通过ServiceLoader.load或者Service.providers方法拿到实现类的实例
+
+2、及时编译
+JIT编译器（just in time 即时编译器），当虚拟机发现某个方法或代码块运行特别频繁时，就会把这些代码认定为(Hot Spot Code 热点代码，
+为了提高热点代码的执行效率，在运行时，虚拟机将会把这些代码编译成与本地平台相关的机器码，并进行各层次的优化，完成这项任务的正是JIT编译器。
+
+
