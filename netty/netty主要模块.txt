@@ -37,6 +37,7 @@ ChannelHandler 是一个接口，处理 I/O 事件或拦截 I/O 操作，并将其转发到其 ChannelP
 ChannelHandler 本身并没有提供很多方法，因为这个接口有许多的方法需要实现，方便使用期间，可以继承它的子类：
 ChannelInboundHandler 用于处理入站 I/O 事件。
 ChannelOutboundHandler 用于处理出站 I/O 操作。
+SimpleChannelInboundHandler
 
 
 【ChannelHandlerContext】：
@@ -44,6 +45,9 @@ ChannelOutboundHandler 用于处理出站 I/O 操作。
 【ChannelPipline】
 保存 ChannelHandler 的 List，用于处理或拦截 Channel 的入站事件和出站操作。
 ChannelPipeline 实现了一种高级形式的拦截过滤器模式，使用户可以完全控制事件的处理方式，以及 Channel 中各个的 ChannelHandler 如何相互交互。
+
+
+
 
 基本例子
 publicstaticvoidmain(String[] args) {

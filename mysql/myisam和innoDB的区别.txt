@@ -1,0 +1,51 @@
+InnoDB索引是聚簇索引，MyISAM索引是非聚簇索引
+InnoDb支持外键，MyISAM不支持
+InnoDb支持事务，MyISAM不支持
+InnoDb行级锁定、表级锁定，锁定力度小并发能力高，MyISAM表级锁定
+InnoDb不支持全文索引，MyISAM支持全文索引
+InnoDb支持哈希索引，MyISAM不支持哈希索引
+
+主键索引: 数据列不允许重复，不允许为NULL，一个表只能有一个主键。
+唯一索引: 数据列不允许重复，允许为NULL值，一个表允许多个列创建唯一索引
+普通索引: 基本的索引类型，没有唯一性的限制，允许为NULL值
+全文索引： 是目前搜索引擎使用的一种关键技术
+
+创建索引的三种方式
+第一种方式：在执行CREATE TABLE时创建索引
+CREATE TABLE user_index2 (
+id INT auto_increment PRIMARY KEY,
+FULLTEXT KEY (information),
+UNIQUE KEY (id_card)
+)
+
+第二种方式：使用ALTER TABLE命令去增加索引
+ALTER TABLE table_name ADD INDEX index_name (column_list);
+
+第三种方式：使用CREATE INDEX命令创建
+CREATE INDEX index_name ON table_name (column_list);
+
+最左前缀原则？
+
+B树和B+树的区别
+
+数据库为什么使用B+树而不是B树
+
+什么是数据库事务？
+
+主键：数据库表中对储存数据对象予以唯一和完整标识的数据列或属性的组合。一个数据列只能有一个主键，且主键的取值不能缺失，即不能为空值（Null）
+外键：在一个表中存在的另一个表的主键称此表的外键。
+
+内连接（INNER JOIN）
+左外连接：LEFT OUTER JOIN, 以左表为主，先查询出左表，按照ON后的关联条件匹配右表，没有匹配到的用NULL填充，可以简写成LEFT JOIN
+外连接（LEFT JOIN/RIGHT JOIN）
+RIGHT OUTER JOIN, 以右表为主，先查询出右表，按照ON后的关联条件匹配左表，没有匹配到的用NULL填充，可以简写成RIGHT JOIN
+
+分页
+SELECT * FROM table LIMIT 5,10; // 检索记录行 6-15 
+
+主键使用自增ID还是UUID
+
+字段为什么要求定义为not null？
+null值会占用更多的字节，且会在程序中造成很多与预期不符的情况
+
+

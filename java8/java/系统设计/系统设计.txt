@@ -1,0 +1,49 @@
+秒杀系统
+https://zhuanlan.zhihu.com/p/92307325
+
+浏览器二维码扫码登录
+https://blog.csdn.net/Ch97CKd/article/details/105001909
+
+如何设计一个排队系统
+https://blog.csdn.net/zy825316/article/details/33727855?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522159266275719724839234154%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=159266275719724839234154&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~first_rank_v2~rank_v25-1-33727855.pc_search_back_js3&utm_term=%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E6%8E%92%E9%98%9F%E7%B3%BB%E7%BB%9F
+
+概率：54张扑克牌，平均分成3份，大小王在一份的概率
+分成3份
+总的分法           M=(C54，18)*(C36，18)*(C18，18)
+大小王在同一份N=(C3，1)*(C52，16)*(C36，18)*(C18，18)
+P=N /M=17/53
+
+64匹马，8个跑道，选跑最快的4匹马需要比赛多少次
+11次
+https://blog.csdn.net/u013829973/article/details/80787928?utm_medium=distribute.pc_relevant.none-task-blog-baidujs-1
+
+系统中有几万个任务需要在各自的特定时刻触发执行，怎么做？
+采用redis zset实现延迟队列
+ZRANGE salary 0 -1 WITHSCORES 分数值递增(从小到大)来排列
+ZREVRANGE salary 0 -1 WITHSCORES 分数值递减(从大到小)来排列
+https://my.oschina.net/u/3266761/blog/1930360
+
+mysql设计微信关注模型
+https://www.cnblogs.com/linjiqin/p/12828315.html
+
+短url设计
+https://www.cnblogs.com/macs524/articles/5680882.html
+
+如何设计12306网站架构
+https://cloud.tencent.com/developer/article/1540075
+
+搜索关键词智能提示suggestion
+简单直接的方法是：用trie树存储大量字符串，当前缀固定时，存储相对来说比较热的后缀。
+然后用hashmap+堆，统计出如10个近似的热词，也就是说，只存与关键词近似的比如10个热词，我们把这个统计热词的方法称为TOP K算法。
+
+如何设计支付系统
+https://www.jianshu.com/p/0dbfaeddee47?utm_campaign=haruki
+
+转账中的事务问题
+https://blog.csdn.net/zhuxianxin0118/article/details/94393070
+
+如何设计微信抢红包
+https://www.jianshu.com/p/8ca5259ef155
+
+负载均衡加权轮询算法
+https://www.cnblogs.com/markcd/p/8456870.html

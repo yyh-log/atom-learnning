@@ -1,0 +1,226 @@
+节点启动过程：
+堆大小检查
+最大线程数检查
+虚拟内存检查
+
+启动内部模块
+discovery.start()
+clusterService.start()
+IndicesService.start()
+TransportService.start()
+HttpServerTransport.start()
+
+选举
+
+gateWay模块
+https://www.easyice.cn/archives/226
+持久化的 state 不包括某个 shard 存在于哪个 node 这种内容路由信息,依靠 gateway 的 recovery 过程重建 RoutingTable
+执行线程为:generic
+
+
+allocation模块
+https://www.easyice.cn/archives/248
+分片分配就是把一个分片指派到集群中某个节点的过程. 分配决策由主节点完成，分配决策包含两方面：
+哪些分片应该分配给哪些节点
+哪个分片作为主分片，哪些作为副本分片
+触发时期：
+index 增删
+node 增删
+手工 reroute
+replica数量改变
+集群重启
+
+
+两种情况：
+新建索引：
+
+已有索引：
+
+决策器：
+负载均衡类
+SameShardAllocationDecider
+避免主副分片分配到同一个节点
+
+AwarenessAllocationDecider
+感知分配器，感知服务器、机架等，尽量分散存储shard
+
+DiskThresholdDecider
+根据磁盘空间进行决策的分配器
+
+FilterAllocationDecider
+通过接口动态设置的过滤器(index.routing.allocation.require)
+
+当数据节点发现某个分片分配给自己，开始执行分片的 recovery
+
+
+Recovery模块
+https://www.easyice.cn/archives/231
+主分片恢复流程
+主分片的 recovery 就是把 translog 中的内容转移到 lucene，把当前 translog 做快照,重放每条记录,调用标准的index 操作创建或更新 doc来恢复,然后再处理recovery期间新写入的数据
+
+副本分片恢复流程
+phase1 对比分段信息,如果 syncid 相同且 doc 数量相同,则跳过，否则复制整个分段
+phase2 将当前 translog 做快照,发送所有的 translog operation 到对端节点,不限速
+
+在 es 6.0中再次优化这个问题,思路是给每次写入成功的操作都分配一个序号
+,通过对比序号就可以计算出差异范围,在实现方式上, 
+添加了global checkpoint 和 local checkpoint，checkpoint,
+主分片负责维护global checkpoint,代表所有分片都已写入到了这个序号的位置
+,local checkpoint代表当前分片已写入成功的最新位置,恢复时通过对比两个序列号，
+计算出缺失的数据范围，然后通过translog重放这部分数据,同时 translog 会为此保留更长的时间.
+
+提升 recovery
+使用 _forcemerge
+
+集群 FullRestart 的建议操作过程
+停止写入
+禁用 shard allocation
+ 
+curl localhost:9200/{index}/_stats?level=shards&pretty
+curl localhost:9200/{index}/_recovery?pretty&human&detailed=true
+curl localhost:9200/_cat/recovery
+ 
+
+线程池模块
+generic
+通用的线程池，用于节点发现，选举，分配分片，revocery
+
+index
+用于index/delete操作
+
+search
+
+get
+
+bulk
+线程数设置
+
+snapshot
+
+refresh
+
+flush
+
+force_merge
+
+
+
+CPU密集型：N+1
+IO密集型：2N+1
+最佳线程数:((线程等待时间+线程CPU时间)/线程CPU时间) * CPU个数
+
+写入优化
+-------------------------------
+translog flush间隔调整
+index.translog.sync_interval
+
+索引refresh_interval
+index.refresh_interval:120s
+
+段合并优化
+
+Indexing Buffer
+每个 shard 有自己的 indexing buffer
+indices.memory.index_buffer_size
+默认为整个堆空间的10%
+indices.memory.min_index_buffer_size
+默认48mb
+
+bulk 线程池和队列大小
+线程数量配置为 CPU 核心数+1
+
+节点间的任务均衡
+
+----------------------------
+索引过程调整和优化
+自动生成 doc ID
+调整字段 Mappings  index 属性设置为no，dynamic=false
+索引字段数量限制 index.mapping.total_fields.limit
+索引字段深度限制 index.mapping.depth.limit
+索引字段名长度限制 index.mapping.field_name_length.limit
+禁用 Norms 关闭评分
+date_detection: false
+numeric_detection: true
+禁止auto create index
+ignore_above ：Strings longer than the ignore_above setting will not be indexed or stored
+-------------------------------------
+搜索优化
+
+为文件系统cache预留足够的内存
+避免nested parent-child文档
+为只读索引执行force-merge
+尽量不要使用深度分页查询，采用scroll或者search after
+尽量使用filter
+聚合是size设为0
+使用constant_score查询
+---------------------------
+磁盘优化
+使用best_compression
+_source和设置为store:true的字段默认采用压缩算法Lz4，可以通过best_compression来执行压缩比更高的算法DEFLATE
+Shrink index
+较少索引分片的数量
+
+采用冷热架构
+副本数量1
+冷接点设置为只读索引
+
+------------------------------
+应用
+当个分片不要超过50G
+节点规模控制在100个左右
+jvm堆不要超过32G
+
+移除节点先数据迁移
+put _cluster/settings
+{
+   "transient":{
+         "cluster.routing.allocation.exclude._name":"node-1"
+   }
+}
+
+为cache保留超过一半物理内存
+
+避免索引分片不均匀
+routing.allocation.total_shards_per_node:2
+
+close一些不用索引
+
+延迟分配分片
+index。unassigned.node_left.delayed_timeout:"5d"
+
+设置断路器
+
+index.requests.cache.enable:true
+indices.queries.cache.size
+------------------------------------
+故障排查
+
+生产环境不要使用profile API
+使用explain定位问题
+cat/task
+
+luence词典中的fst会被加载到内存
+
+不要超过32G原因
+https://www.elastic.co/guide/cn/elasticsearch/guide/current/heap-sizing.html
+
+
+search after原理
+https://www.jianshu.com/p/91d03b16af77
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

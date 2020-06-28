@@ -7,6 +7,14 @@ head/tail ²¢·Ç×ÜÊÇÖ¸Ïò¶ÓÁĞµÄÍ· / Î²½Úµã £¬¼õÉÙCAS¸üĞÂtail½ÚµãµÄ´ÎÊı£¬¾ÍÄÜÌá¸ßÈë¶
 ConcurrentLinkedDeque
 Ë«¶Ë¶ÓÁĞ£¬ConcurrentLinkedDequeºÍConcurrentLinkedQueueÒ»Ñù£¬²ÉÓÃÁËÎŞËøËã·¨£¬µ×²ã»ùÓÚ×ÔĞı+CASµÄ·½Ê½ÊµÏÖ
 
+BlockingQueue
+add()
+remove()
+put()
+take()
+offer(E e, long timeout, TimeUnit unit)
+poll(long timeout, TimeUnit unit)
+
 ArrayBlockingQueue
 ÓÃReentrantLockÀ´±£Ö¤Ïß³Ì°²È«£¬Ò»ÖÖÓĞ½ç×èÈû¶ÓÁĞ£¬ÄÚ²¿Êı×éÆäÊµÊÇÒ»ÖÖ»·ĞÎÊı×é£¬ÔÚ³õÊ¼¹¹ÔìµÄÊ±ºòĞèÒªÖ¸¶¨¶ÓÁĞµÄÈİÁ¿
 ¶ÓÁĞµÄÈİÁ¿Ò»µ©ÔÚ¹¹ÔìÊ±Ö¸¶¨£¬ºóĞø²»ÄÜ¸Ä±ä£»
@@ -62,18 +70,28 @@ public interface Delayed extends Comparable<Delayed> {
     long getDelay(TimeUnit unit);//return unit.convert(this.time - System.nanoTime(), TimeUnit.NANOSECONDS);
 }
 
-
 SynchronousQueue 
 ÄÚ²¿²»±£´æÈÎºÎÔªËØ£¬Ò²¾ÍÊÇËµËüµÄÈİÁ¿Îª0£¬Êı¾İÖ±½ÓÔÚÅä¶ÔµÄÉú²úÕßºÍÏû·ÑÕßÏß³ÌÖ®¼ä´«µİ£¬²»»á½«Êı¾İ»º³åµ½¶ÓÁĞÖĞ
 ÆäÖĞ·Ç¹«Æ½Ä£Ê½£¬»ùÓÚÄÚ²¿Êı¾İ½á¹¹¡ª¡ª¡°Õ»¡±À´ÊµÏÖ£¬¹«Æ½Ä£Ê½£¬»ùÓÚÄÚ²¿Êı¾İ½á¹¹¡ª¡ª¡°¶ÓÁĞ¡±À´ÊµÏÖ
 ¶ÔÓÚ¹«Æ½²ßÂÔ£¬ÄÚ²¿¹¹ÔìÁËÒ»¸öTransferQueue¶ÔÏó£¬¶ø·Ç¹«Æ½²ßÂÔÔòÊÇ¹¹ÔìÁËTransferStack¶ÔÏó¡£ÕâÁ½¸öÀà¶¼¼Ì³ĞÁËÄÚ²¿ÀàTransferer
 TransferQueueÖ÷ÒªÓÃÓÚÏß³ÌÖ®¼äµÄÊı¾İ½»»»£¬ÓÉÓÚ²ÉÓÃÎŞËøËã·¨£¬ÆäĞÔÄÜÒ»°ã±Èµ¥´¿µÄÆäËü×èÈû¶ÓÁĞÒª¸ß
 
+abstract static class Transferer<E> {
+        /**
+         * Performs a put or take.
+         *
+         * @param e ·Çnull±íÊ¾ Éú²úÕß -> Ïû·ÑÕß;
+         *          null±íÊ¾, Ïû·ÑÕß -> Éú²úÕß.
+         * @return ·Çnull±íÊ¾´«µİµÄÊı¾İ; null±íÊ¾´«µİÊ§°Ü£¨³¬Ê±»òÖĞ¶Ï£©.
+         */
+        abstract E transfer(E e, boolean timed, long nanos);
+    }
+
 LinkedTransferQueue:
 transfer()·½·¨£¬µ±ÓĞÏû·ÑÕßÏß³Ì×èÈûµÈ´ıÊ±£¬µ÷ÓÃtransfer·½·¨µÄÉú²úÕßÏß³Ì²»»á½«ÔªËØ´æÈë¶ÓÁĞ£¬¶øÊÇÖ±½Ó½«ÔªËØ´«µİ¸øÏû·ÑÕß
 ÊÇÒ»ÖÖÎŞ½ç×èÈû¶ÓÁĞ£¬µ×²ã»ùÓÚµ¥Á´±íÊµÏÖ£»
 ÖĞµÄ½áµãÓĞÁ½ÖÖÀàĞÍ£ºÊı¾İ½áµã¡¢ÇëÇó½áµã
-ÎŞËøËã·¨ÊµÏÖ
+ÎŞËøËã·¨ÊµÏÖ ×ÔĞı+cas
 
 PriorityBlockingQueue
 PriorityBlockingQueueÓëÖ®Ç°½éÉÜµÄ×èÈû¶ÓÁĞ×î´óµÄ²»Í¬Ö®´¦¾ÍÊÇ£ºËüÊÇÒ»ÖÖÓÅÏÈ¼¶¶ÓÁĞ£¬Ò²¾ÍÊÇËµÔªËØ²¢²»ÊÇÒÔFIFOµÄ·½Ê½³ö/Èë¶Ó£¬¶øÊÇÒÔ°´ÕÕÈ¨ÖØ´óĞ¡µÄË³Ğò³ö¶Ó£»
@@ -92,7 +110,7 @@ Arrays.copyOf(elements, len + 1);    // ¸´ÖÆ²¢´´½¨ĞÂÊı×é
 
 CopyOnWriteArraySet
 ÄÚ²¿ÒıÓÃÁËÒ»¸öCopyOnWriteArrayList¶ÔÏó£¬ÒÔ¡°×éºÏ¡±·½Ê½£¬Î¯ÍĞ
-CopyOnWriteArraySet²»ÔÊĞíº¬ÓĞÖØ¸´ÔªËØ£¬ËùÒÔÌí¼ÓÔªËØ£¨add·½·¨£©Ê±£¬ÄÚ²¿µ÷ÓÃÁËCopyOnWriteArrayListµÄaddAllAbsent·½·¨
+CopyOnWriteArraySet²»ÔÊĞíº¬ÓĞÖØ¸´ÔªËØ£¬ËùÒÔÌí¼ÓÔªËØ£¨add·½·¨£©Ê±£¬ÄÚ²¿µ÷ÓÃÁËCopyOnWriteArrayListµÄaddAllAbsent·½·¨ //Appends the element, if not present.
 
 
 ConcurrentSkipListSet
@@ -103,11 +121,23 @@ ConcurrentSkipListSet
 Ã¿Ò»²ã¶¼ÊÇÒ»¸öÓĞĞòÁ´±í£»
 ¶ÔÓÚÃ¿Ò»²ãµÄÈÎÒâ½áµã£¬²»½öÓĞÖ¸ÏòÏÂÒ»¸ö½áµãµÄÖ¸Õë£¬Ò²ÓĞÖ¸ÏòÆäÏÂÒ»²ãµÄÖ¸Õë¡£
 
+´ÓÉÏÊö´úÂë¿ÉÒÔ¿´³ö£¬ËùÓĞ²Ù×÷¾ùÊÇÎ¯ÍĞConcurrentSkipListMap¶ÔÏóÍê³ÉµÄ¡£ÖØµã¿´ÏÂadd·½·¨£º
+public boolean add(E e) {
+    return m.putIfAbsent(e, Boolean.TRUE) == null;
+}
+ÎÒÃÇÖªµÀConcurrentSkipListMap¶Ô¼üÖµ¶ÔµÄÒªÇóÊÇ¾ù²»ÄÜÎªnull£¬
+ËùÒÔConcurrentSkipListSetÔÚ²åÈëÔªËØµÄÊ±ºò£¬
+ÓÃÒ»¸öBoolean.TRUE¶ÔÏó£¨Ïàµ±ÓÚÒ»¸öÖµÎªtrueµÄBooleanĞÍ¶ÔÏó£©×÷Îªvalue£¬
+Í¬Ê±putIfAbsent¿ÉÒÔ±£Ö¤²»»á´æÔÚÏàÍ¬µÄKey
+
 ConcurrentSkipListMap
 
 Exchanger
 ½»»»Æ÷,Thread1Ïß³Ìµ½´ïÕ¤À¸ºó£¬»áÊ×ÏÈ¹Û²ìÓĞÃ»ÆäËüÏß³ÌÒÑ¾­µ½´ïÕ¤À¸£¬Èç¹ûÃ»ÓĞ¾Í»áµÈ´ı£¬
 Èç¹ûÒÑ¾­ÓĞÆäËüÏß³Ì£¨Thread2£©ÒÑ¾­µ½´ïÁË£¬¾Í»áÒÔ³É¶ÔµÄ·½Ê½½»»»¸÷×ÔĞ¯´øµÄĞÅÏ¢£¬Òò´ËExchanger·Ç³£ÊÊºÏÓÃÓÚÁ½¸öÏß³ÌÖ®¼äµÄÊı¾İ½»»»
+Exchanger<Message> exchanger = new Exchanger<>();
+msg = exchanger.exchange(msg);
+
 
 Phaser
 ·Ö½×¶ÎµÄÈÎÎñµÄ´¦Àí
@@ -120,7 +150,7 @@ Skip ListµÄ»ù±¾Ë¼ÏëÁË£¬×Ü½áÆğÀ´£¬ÓĞÒÔÏÂ¼¸µã£º
 Ã¿Ò»²ã¶¼ÊÇÒ»¸öÓĞĞòÁ´±í£»
 ¶ÔÓÚÃ¿Ò»²ãµÄÈÎÒâ½áµã£¬²»½öÓĞÖ¸ÏòÏÂÒ»¸ö½áµãµÄÖ¸Õë£¬Ò²ÓĞÖ¸ÏòÆäÏÂÒ»²ãµÄÖ¸Õë¡£
 Ò»ÖÖ¡°¿Õ¼ä»»Ê±¼ä¡±µÄËã·¨Éè¼ÆË¼
-
+O(logN)
 
 
 

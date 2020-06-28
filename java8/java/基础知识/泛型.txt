@@ -24,6 +24,8 @@ classArrayAlg{
 Pair<? extends Employee> 
 Pair<? super Employee>
 
+
+
 无限定通配符
 Pair<?>
 
@@ -36,3 +38,10 @@ https://www.cnblogs.com/wuqinglong/p/9456193.html
 Java的泛型是伪泛型，这是因为Java在编译期间，所有的泛型信息都会被擦掉保留的原始类型
 原始类型 就是擦除去了泛型信息，最后在字节码中的类型变量的真正类型，无论何时定义一个泛型，相应的原始类型都会被自动提供，类型变量擦除，并使用其限定类型（无限定的变量用Object）替换。
 如在代码中定义List<Object>和List<String>等类型，在编译后都会变成List
+
+
+
+        Class<String> stringClass = String.class;
+        Class<?> aClass = Class.forName("");
+        String abc = new String("ss");
+        Class<? extends String> aClass1 = abc.getClass();

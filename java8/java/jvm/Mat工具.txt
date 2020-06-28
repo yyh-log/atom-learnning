@@ -1,0 +1,13 @@
+Histogram是我们使用最多的一个，可以列出内存中的对象，对象的个数及其大小
+list objects ->with incoming refs 将列出该类的实例
+右健 Path to GC Roots–>exclue all phantom/weak/soft etc. reference
+
+看到对象后，我们一般右击来看下对象的GC root，来确定对象没有被释放的原因，有两个选项
+右击 -> path to gc roots -> exclude all phantom/weak/soft etc. references
+右击 -> merge shortest paths to gc roots -> exclude all phantom/weak/soft etc. references
+两个的区别是1是显示从该对象到gc roots的路径，而且会显示所有的gc roots(一个对象的gc root可以有多个)；
+2显示的是从gc roots到对象的路径，而且只显示最短的一条路径。 gc root的显示在2.2中已经显示过了
+
+https://www.cnblogs.com/set-cookie/p/11069748.html
+
+Leak Suspects

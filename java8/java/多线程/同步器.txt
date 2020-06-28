@@ -3,11 +3,9 @@ CountDownLatch µÄÍ¬²½¹¦ÄÜÊÇ»ùÓÚ AQS ÊµÏÖµÄ£¬CountDownLatch Ê¹ÓÃ AQS ÖÐµÄ state ³
 ÔÚ state ²»Îª0µÄÇé¿öÏÂ£¬·²ÊÇµ÷ÓÃ await ·½·¨µÄÏß³Ì½«»á±»×èÈû£¬²¢±»·ÅÈë AQS ËùÎ¬»¤µÄÍ¬²½¶ÓÁÐÖÐ½øÐÐµÈ´ý¡£
 µ±ÓÐÒ»¸öÏß³Ìµ÷ÓÃ countDown ·½·¨£¬¾Í½«¼ÆÊýÆ÷ state--¡£µ± state ±»¼õÖÁ0Ê±£¬¶ÓÁÐÖÐµÄ½Úµã¾Í»á°´ÕÕ FIFO Ë³Ðò±»»½ÐÑ£¬±»×èÈûµÄÏß³Ì¼´¿É»Ö¸´ÔËÐÐ
 
-
 CyclicBarrier 
 ÔÚÖØÈëËø ReentrantLock µÄ»ù´¡ÉÏÊµÏÖµÄ¡£
 µ÷ÓÃ Condition µÄ await ·½·¨½øÈëµÈ´ý×´Ì¬¡£ÔÚ×îºóÒ»¸öÏß³Ì½øÈë CyclicBarrier await ·½·¨ºó£¬¸ÃÏß³Ì½«»áµ÷ÓÃ Condition µÄ signalAll ·½·¨»½ÐÑËùÓÐ´¦ÓÚµÈ´ý×´Ì¬ÖÐµÄÏß³Ì
-
 
 AQS
 
@@ -24,3 +22,5 @@ Semaphore
 SemaphoreÀà£¨ÐÅºÅÁ¿£©Ê¹ÓÃAQSÍ¬²½×´Ì¬stateÀ´±£´æÐÅºÅÁ¿µÄµ±Ç°¼ÆÊý¡£
 ËüÀïÃæ¶¨ÒåµÄacquireShared·½·¨»á¼õÉÙ¼ÆÊý£¬»òµ±¼ÆÊýÎª·ÇÕýÖµÊ±×èÈûÏß³Ì£»tryRelease·½·¨»áÔö¼Ó¼ÆÊý£¬ÔÚ¼ÆÊýÎªÕýÖµÊ±»¹Òª½â³ýÏß³ÌµÄ×èÈû
 
+
+AtomicStampedReferenceÀ´½â¾öABAÎÊÌâ

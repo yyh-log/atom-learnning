@@ -1,0 +1,13 @@
+happens-before
+as-if-serial
+
+volatile 可见性，防止指令重排
+
+Synchronized 
+
+
+Mark Word  32bit hashcode gc标志 锁信息
+
+InheritableThreadLocal  childValue getMap createMap
+
+

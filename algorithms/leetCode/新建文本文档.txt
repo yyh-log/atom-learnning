@@ -1,0 +1,80 @@
+75颜色分类 三指针法
+82. 删除排序链表中的重复元素 II //pre在cur的前一个节点，说明没有重复的
+83. 删除排序链表中的重复元素 
+86. 分隔链表 构建两个新的链表p1和p2，p1.next=p2
+88. 合并两个有序数组 将 nums2 合并到 nums1 中
+91. 解码方法 动态规划
+92. 反转链表 II 
+95. 不同的二叉搜索树 II 
+96. 不同的二叉搜索树 G[i] += G[j - 1] * G[i - j];
+98  验证二叉搜索树  中序遍历升序来判断
+100.判断两个是否是相同的树  递归处理
+103. 二叉树的锯齿形层次遍历
+105. 从前序与中序遍历序列构造二叉树 递归myBuildTree(preorder, inorder, 0, n - 1, 0, n - 1); 从两个数组挑选前序子数组和中序子数组
+106. 从中序与后序遍历序列构造二叉树 dfs(inorder,postorder,0,n-1,0,n-1);
+107. 二叉树的层次遍历 II 倒序输出
+108. 将有序数组转换为转换为一棵高度平衡二叉搜索树 二分法
+109. 有序链表转换高度平衡的二叉搜索树 // 快慢指针找到中间位置断开链表 head == mid直接返回
+110. 平衡二叉树 递归返回-1表示不是平衡树，本质上采用后续遍历判断左右子树的高度
+111. 二叉树的最小深度 
+后序遍历
+//1.左孩子和有孩子都为空的情况，说明到达了叶子节点，直接返回1即可
+//2.如果左孩子和由孩子其中一个为空，那么需要返回比较大的那个孩子的深度+1
+//3.最后一种情况，也就是左右孩子都不为空，返回最小深度+1即可
+112. 路径总和 前序遍历，当root.left==null&&root.right==null判断是否sum==0
+113. 路径总和 II 先序遍历，采用tmp存储node值，记得回溯
+114. 二叉树展开为链表展开1->2->3->4->5 后序遍历的变形，先右子树在左子树 
+116. 填充每个节点的下一个右侧节点指针 if(i<size-1) node.next = queue.peek();
+118. 杨辉三角 List<Integer> preRow = res.get(i-1);
+119. 杨辉三角 II 返回杨辉三角的第 k 行 
+120. 三角形最小路径和 动态规划 相邻的结点 在这里指的是 下标 与 上一层结点下标 相同或者等于 上一层结点下标 + 1 的两个结点
+121. 买卖股票的最佳时机  只允许完成一笔交易 遍历时记录前面最低价格
+122. 买卖股票的最佳时机 II  允许多次买卖 贪心算法
+125. 验证回文串 采用Character.isLetterOrDigit + 双指针
+129. 求根到叶子节点数字之和 前序遍历每一个节点 当前累计值current = value*10 + node.val;
+130. 被围绕的区域 dfs递归上下左右 递归终止条件i < 0 || j < 0 || i >= board.length  || j >= board[0].length || board[i][j] == 'X' || board[i][j] == '#'
+131. 分割回文串 给定一个字符串 s，将 s 分割成一些子串，使每个子串都是回文串 回溯法 s.substring(start, i + 1) backtracking(s, i + 1, len, path, res);
+134. 加油站 
+ int sum=gas[i];//汽车初始汽油容量
+ for(int j=i;;){
+ sum-=cost[j];//耗油
+}
+135. 分发糖果 采用left和right存放糖果
+136. 只出现一次的数字 res ^= nums[i]; 0和自身异或等于自身，自身异或自身等于0
+137.只出现一次的数字 II 有限状态自动机
+ones = ones ^ num & ~twos;
+twos = twos ^ num & ~ones;
+141. 环形链表 快慢指针
+142. 环形链表 II
+143. 重排链表 快慢指针找中点，断开，翻转后边链表，连接
+144. 二叉树的前序遍历  TreeNode node = deque.pollFirst(); res.add(node.val); deque.offerFirst(node.right); deque.offerFirst(node.left);
+145. 二叉树的后序遍历  queue.pollFirst(); res.offerFirst(node.val); queue.offerFirst(node.left); queue.offerFirst(node.right); 
+146. LRU缓存机制 
+    class DLinkedNode {
+        int key;
+        int value;
+        DLinkedNode prev;
+        DLinkedNode next;
+        public DLinkedNode() {}
+        public DLinkedNode(int _key, int _value) {key = _key; value = _value;}
+    }
+moveToHead()
+addToHead()
+removeNode()
+removeTail()
+148. 排序链表 O(n log n) 时间复杂度 归并法+快慢指针找中点+合并两个有序链表
+167. 两数之和 II - 输入有序数组 
+169. 多数元素
+179. 最大数 数组重新排列组成最大数 int[]转成String[],Arrays.sort(input,(x,y)->(y+x).compareTo(x+y));
+198. 打家劫舍 动态规划 自底向上  dp[i] = Math.max(dp[i+1], dp[i+2] + nums[i]);
+199. 二叉树的右视图 
+206. 反转链表
+215. 数组中的第K个最大元素 堆或者最快排序法 第K个最大值即快速排序找到下标len-k位置的元素 产生区间的随机值 (int)(Math.random()*(r-l+1)+l);//[l,r]
+242. 有效的字母异位词 哈希数组
+
+
+
+
+
+
+ 

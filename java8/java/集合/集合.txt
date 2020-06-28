@@ -80,6 +80,15 @@ TreeMap(SortedMap<K, ? extends V> m) {}
 添加其实就是遍历树的操作，根据排序器的规则来遍历，然后找到对应的位置插入数据
 firstKey()/firstEntry()/lastKey()/lastEntry()方法
 lowerKey()/lowerEntry()/higherKey()/higherEntry()方法
+TreeMap<Integer, String> map = new TreeMap<>(Comparator.reverseOrder());
+map.put(3, "val");
+map.put(2, "val");
+map.put(1, "val");
+map.put(5, "val");
+map.put(4, "val");
+System.out.println(map); // {5=val, 4=val, 3=val, 2=val, 1=val}
+
+
 
 HashSet
 HashSet底层完全就是在HashMap的基础上包了一层，只不过存储的时候value是默认存储了一个Object的静态常量，取的时候也是只返回key

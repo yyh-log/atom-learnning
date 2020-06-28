@@ -134,6 +134,22 @@ class Solution {
         return max;
     }
 }
+滑动窗口
+public int lengthOfLongestSubstring(String s) {
+       if (s.length()==0) return 0;
+       HashMap<Character, Integer> map = new HashMap<Character, Integer>();
+       int max = 0;
+       int left = 0;
+       for(int i = 0; i < s.length(); i ++){
+           if(map.containsKey(s.charAt(i))){//遇到重复的
+               left = Math.max(left,map.get(s.charAt(i)) + 1);//调整窗口左边左边，例如abcdb->bcdb
+           }
+           map.put(s.charAt(i),i);
+           max = Math.max(max,i-left+1);
+       }
+       return max;
+       
+   }
 ```
 #### 4、寻找两个有序数组的中位数  
 [LeetCode](https://leetcode-cn.com/problems/median-of-two-sorted-arrays/)    
@@ -277,6 +293,51 @@ public class Solution {
     }
 }
 ```
+#### 6 Z字形变换
+```java
+
+```
+#### 7 整数翻转
+```java
+class Solution {
+    public int reverse(int x) {
+        int ans = 0;
+        while (x != 0) {
+            int pop = x % 10;
+            if (ans > Integer.MAX_VALUE / 10 || (ans == Integer.MAX_VALUE / 10 && pop > 7)) //溢出判断2^32-1=2147483647
+                return 0;
+            if (ans < Integer.MIN_VALUE / 10 || (ans == Integer.MIN_VALUE / 10 && pop < -8))  //溢出判断-2^32=2147483648
+                return 0;
+            ans = ans * 10 + pop;
+            x /= 10;
+        }
+        return ans;
+    }
+}
+```
+#### 8 	字符串转换整数 (atoi)  
+```java
+
+```
+#### 9 	回文数  
+```java
+class Solution {
+    public boolean isPalindrome(int x) {
+        String in = String.valueOf(x);
+        int i = 0;
+        int j = in.length()-1;
+        while(i<j){
+            if(in.charAt(i)==in.charAt(j)){
+                i++;
+                j--;
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+}
+```
 #### 10 正则表达式
 [LeetCode](https://leetcode-cn.com/problems/regular-expression-matching/)  
 1 递归  
@@ -380,22 +441,63 @@ public class Solution {
     }
 }
 ```
+#### 罗马数字转整数
+```
+public int romanToInt(String s) {
+         Map<String,Integer> romanMap = new HashMap<>();
+         romanMap.put("I",1);
+         romanMap.put("V",5);
+         romanMap.put("X",10);
+         romanMap.put("L",50);
+         romanMap.put("C",100);
+         romanMap.put("D",500);
+         romanMap.put("M",1000);
+         romanMap.put("IV",4);
+         romanMap.put("IX",9);
+         romanMap.put("XL",40);
+         romanMap.put("XC",90);
+         romanMap.put("CD",400);
+         romanMap.put("CM",900);
+
+         int sum = 0;
+         while(!s.isEmpty()){
+             String first = s.substring(0,1);
+             if(s.length()>1){
+                 String second = s.substring(0,2);
+                 if(romanMap.containsKey(second)){//存在两个字符的罗马数字
+                   sum += romanMap.get(second);
+                   s = s.substring(2);
+                   continue;
+                 }
+             }
+             sum += romanMap.get(first);
+             s = s.substring(1);
+         }
+         return sum;
+        }
+```
 #### 14、最长公共前缀
 [LeetCode]
 ```java
 1、循环
 class Solution {
-public static String longestCommonPrefix(String[] strs) {
-        if (strs.length == 0) return "";
-        String prefix = strs[0];
-        for (int i = 1; i < strs.length; i++)
-            while (strs[i].indexOf(prefix) != 0) {
-                prefix = prefix.substring(0, prefix.length() - 1);
-                if (prefix.isEmpty()) return "";
-            }
-        return prefix;
-   }
- }
+  //按列一个字符一个字符比较
+  public String longestCommonPrefix(String[] strs) {
+          if (strs == null || strs.length == 0) {
+              return "";
+          }
+          int length = strs[0].length();
+          int count = strs.length;
+          for (int i = 0; i < length; i++) {
+              char c = strs[0].charAt(i);
+              for (int j = 1; j < count; j++) {
+                  if (i == strs[j].length() || strs[j].charAt(i) != c) {//发现字符不想等，立即返回
+                      return strs[0].substring(0, i);
+                  }
+              }
+          }
+          return strs[0];//
+      }
 2、分治  
 class Solution {
     public String longestCommonPrefix(String[] strs) {
@@ -878,6 +980,32 @@ public int removeElement(int[] nums, int val) {
 }
 
 ```
+### 28
+```java
+public int strStr(String haystack, String needle) {
+    if(needle.isEmpty()) return 0;
+    int i=0;
+    int n = needle.length();
+    int l = haystack.length()-n+1;
+    while(i<l){
+        while(i<l && haystack.charAt(i)!=needle.charAt(0)) i++;
+        if(i >= l) return -1;
+        if(match(haystack,needle,i)) return i;
+        i++;
+    }
+    return -1;
+}
+
+public boolean match(String src,String dest,int i){
+    int j=0;
+    while(j<dest.length() && i<src.length()){
+        if(dest.charAt(j)!=src.charAt(i)) return false;
+        j++;
+        i++;
+    }
+    return j==dest.length()?true:false;
+}
+```
 #### 29 两数相除
 [LeetCode](https://leetcode-cn.com/problems/divide-two-integers/)  
 ```java
@@ -1047,7 +1175,36 @@ public static List<Integer> solution2(String s, String[] words) {
         return res;
     }
 ```
+#### 33  
+二分法
+```
+public int search(int[] nums, int target) {
+    int l=0;
+    int r = nums.length-1;
+    while(l<=r){
+        int mid = (l+r)/2;
+        if(nums[mid]==target) return mid;
+        if(nums[0]<=nums[mid]){
+            if(target>=nums[0]&&target<nums[mid]){
+                r = mid-1;
+            }else{
+                l = mid +1;
+            }
+        }else{
+            if(target> nums[mid] && target<=nums[r]){
+                l = mid+1;
+            }else{
+                r = mid-1;
+            }
+        }
+    }
+    return -1;
+}
+```
+#### 34
+```
 
+```
 #### 39、组合总和
 [组合总和](https://leetcode-cn.com/problems/combination-sum/) 
 ![](assets/5616a6cb.png)
@@ -1176,6 +1333,30 @@ class Solution {
    }
 }
 ```
+#### 42、接雨水
+```java
+public int trap(int[] height) {
+
+    int[] max_left = new int[height.length];
+    int[] max_right = new int[height.length];
+    int sum = 0;
+
+    for(int i=1;i<height.length-1;i++){//max_left[i]表示i左边最高的高度，不包括i位置的柱子
+        max_left[i] = Math.max(max_left[i-1],height[i-1]);
+    }
+    for(int i=height.length-2;i>=0;i--){
+        max_right[i] = Math.max(max_right[i+1],height[i+1]);
+    }
+
+    for(int i=1;i<height.length-1;i++){
+        int min = Math.min(max_left[i],max_right[i]);
+        if(min>height[i]){
+            sum = sum + (min-height[i]);
+        }
+    }
+    return sum;
+}
+```
 #### 45、跳跃游戏II
 [LeetCode](https://leetcode-cn.com/problems/jump-game-ii/)   
 每次在可选范围内选择能跳的最远的下标，例如第一个元素2,它可选择的范围是蓝色的3,1。因为选择3它可以提到1+3=4的位置最远，所以选择3.  
@@ -1292,6 +1473,21 @@ class Solution {
     }
 }
 ```
+#### 49 字母异位词分组
+```java
+public List<List<String>> groupAnagrams(String[] strs) {
+    if (strs.length == 0) return new ArrayList();
+    Map<String, List> ans = new HashMap<String, List>();
+    for (String s : strs) {
+        char[] ca = s.toCharArray();
+        Arrays.sort(ca);
+        String key = String.valueOf(ca);
+        if (!ans.containsKey(key)) ans.put(key, new ArrayList());
+        ans.get(key).add(s);
+    }
+    return new ArrayList(ans.values());
+}
+```
 #### 50、跳跃游戏
 [LeetCode](https://leetcode-cn.com/problems/jump-game/)  
 ```java
@@ -1322,6 +1518,22 @@ class Solution {
 }
 2、动态规划
 
+```
+#### 50 Pow(x, n)
+```java
+//快速幂
+public double quickMul(double x, long N) {
+    if (N == 0) {
+        return 1.0;
+    }
+    double y = quickMul(x, N / 2);
+    return N % 2 == 0 ? y * y : y * y * x;
+}
+
+public double myPow(double x, int n) {
+    long N = n;
+    return N >= 0 ? quickMul(x, N) : 1.0 / quickMul(x, -N);
+}
 ```
 #### 51、N皇后
 [LeetCode](https://leetcode-cn.com/problems/n-queens/)  
@@ -1525,6 +1737,111 @@ class Solution {
     }
 }
 ```
+#### 62
+```java
+public int uniquePaths(int m, int n) {
+    int[][] dp = new int[m][n];//dp[i][j]表示到i,j位置共有多少不同的路径
+    for (int i = 0; i < n; i++) dp[0][i] = 1;
+    for (int i = 0; i < m; i++) dp[i][0] = 1;
+    for (int i = 1; i < m; i++) {
+        for (int j = 1; j < n; j++) {
+            dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        }
+    }
+    return dp[m - 1][n - 1];  
+}
+```
+#### 63 不同路径II
+```java
+public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+    int R = obstacleGrid.length;
+    int C = obstacleGrid[0].length;
+    if (obstacleGrid[0][0] == 1) {
+        return 0;
+    }
+    int[][] dp = new int[R][C];
+    dp[0][0] = 1;
+    for (int i = 1; i < R; i++) {
+        dp[i][0] = (obstacleGrid[i][0] == 0 && dp[i - 1][0] == 1) ? 1 : 0;
+    }
+    for (int i = 1; i < C; i++) {
+        dp[0][i] = (obstacleGrid[0][i] == 0 && dp[0][i - 1] == 1) ? 1 : 0;
+    }
+    for (int i = 1; i < R; i++) {
+        for (int j = 1; j < C; j++) {
+            if (obstacleGrid[i][j] == 0) {
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            } else {
+                dp[i][j] = 0;
+            }
+        }
+    }
+    return dp[R - 1][C - 1];
+}
+```
+#### 64 最小路径和
+```java
+public int minPathSum(int[][] grid) {
+    int m = grid.length;
+    int n =grid[0].length;
+    int[][] dp = new int[m][n];
+
+    //dp[i][j] = Math.min(dp[i-1][j],dp[i][j-1])+grid[i][j]
+    for(int j=0;j<n;j++){
+        if(j==0){
+            dp[0][j] = grid[0][0];
+        }else{
+            dp[0][j] = dp[0][j-1] + grid[0][j];
+        }
+    }
+    for(int i=1;i<m;i++){
+        dp[i][0] = dp[i-1][0] + grid[i][0];
+    }
+
+    for(int i=1;i<m;i++){
+        for(int j=1;j<n;j++){
+            dp[i][j] = Math.min(dp[i-1][j],dp[i][j-1]) + grid[i][j];
+        }
+    }
+    return dp[m-1][n-1];
+}
+```
+#### 67 二进制求和
+```java
+public String addBinary(String a, String b) {
+    StringBuilder ans = new StringBuilder();
+    int ca = 0;
+    for(int i = a.length() - 1, j = b.length() - 1;i >= 0 || j >= 0; i--, j--) {
+        int sum = ca;
+        sum += i >= 0 ? a.charAt(i) - '0' : 0;
+        sum += j >= 0 ? b.charAt(j) - '0' : 0;
+        ans.append(sum % 2);
+        ca = sum / 2;//进位
+    }
+    ans.append(ca == 1 ? ca : "");
+    return ans.reverse().toString();
+}
+```
+#### 69 x的平方根
+```java
+//采用迭代的好处
+//递归会有函数调用栈针的开销
+//递归会重复计算
+public int mySqrt(int x) {
+    int l = 0, r = x, res = -1;
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+        if ((long)mid * mid <= x) {
+            res = mid;
+            l = mid + 1;
+        }
+        else {
+            r = mid - 1;
+        }
+    }
+    return res;
+}
+```
 #### 75、颜色分类
 [LeetCode](https://leetcode-cn.com/problems/sort-colors/solution/yan-se-fen-lei-by-leetcode/)  
 三路快排  
@@ -1640,7 +1957,148 @@ class Solution {
     }
 }
 ```
+#### 80 删除排序数组中的重复项 II
+```java
+public int removeDuplicates(int[] nums) {
+    int j = 1, count = 1;    
+    for (int i = 1; i < nums.length; i++) {     
+        if (nums[i] == nums[i - 1]) {
+            count++;         
+        } else {
+            count = 1;
+        }
+        if (count <= 2) {
+            nums[j++] = nums[i];
+        }
+    }
+    return j;
+}
+```
+#### 81  搜索旋转排序数组 II
+```java
+public boolean search(int[] nums, int target) {
+    if (nums == null || nums.length == 0) {
+        return false;
+    }
+    int start = 0;
+    int end = nums.length - 1;
+    int mid;
+    while (start <= end) {
+        mid = start + (end - start) / 2;
+        if (nums[mid] == target) {
+            return true;
+        }
+        if (nums[start] == nums[mid]) {
+            start++;
+            continue;
+        }
+        //前半部分有序
+        if (nums[start] < nums[mid]) {
+            //target在前半部分
+            if (nums[mid] > target && nums[start] <= target) {
+                end = mid - 1;
+            } else {  //否则，去后半部分找
+                start = mid + 1;
+            }
+        } else {
+            //后半部分有序
+            //target在后半部分
+            if (nums[mid] < target && nums[end] >= target) {
+                start = mid + 1;
+            } else {  //否则，去后半部分找
+                end = mid - 1;
 
+            }
+        }
+    }
+    //一直没找到，返回false
+    return false;
+
+}
+```
+#### 82 删除排序链表中的重复元素 II
+```java
+public ListNode deleteDuplicates(ListNode head) {
+    if(head==null) return null;
+    ListNode pre = new ListNode(-1);
+    ListNode h = new ListNode(-1);
+    ListNode cur = head;
+    h.next = cur;
+    pre = h;
+    while(cur!=null){
+        while(cur.next!=null && cur.next.val==cur.val) cur = cur.next;
+        if(pre.next==cur){
+            pre = pre.next;
+        }else{
+            pre.next = cur.next;
+        }
+        cur = cur.next;
+    }
+    return h.next;
+}
+```
+83. 删除排序链表中的重复元素
+```java
+public ListNode deleteDuplicates(ListNode head) {
+    ListNode p = head;
+    while(p!=null){
+        if(p.next!=null && p.val==p.next.val){
+            p.next = p.next.next;
+        }else{
+             p = p.next;
+        }
+    }
+    return head;
+}
+```
+#### 86. 分隔链表
+```java
+public ListNode partition(ListNode head, int x) {
+    ListNode h1 = new ListNode(0);
+    ListNode p1 = h1;
+
+    ListNode h2 = new ListNode(0);
+    ListNode p2 = h2;
+    
+    ListNode h = head;
+    while(h!=null){
+        if(h.val<x){
+            p1.next = h;
+            p1 = p1.next;
+        }else{
+            p2.next = h;
+            p2 = p2.next;
+        }
+        h = h.next;
+    }
+     p2.next = null;//这行代码避免了生成环形链表
+     p1.next = h2.next;
+
+    return h1.next;
+
+}
+```
+#### 88 合并两个有序数组
+```java
+public void merge(int[] nums1, int m, int[] nums2, int n) {
+    int s1 = m-1;
+    int s2 = n-1;
+    int index = nums1.length-1;
+    while(s1>=0&&s2>=0){
+        if(nums1[s1]>=nums2[s2]){
+            nums1[index--] = nums1[s1--];
+        }else{
+            nums1[index--] = nums2[s2--];
+        }
+    }
+    while(s1>=0){
+        nums1[index--] = nums1[s1--];
+    }
+    while(s2>=0){
+        nums1[index--] = nums2[s2--];
+    }
+  }
+```
 #### 90、 子集II
 [子集II](https://leetcode-cn.com/problems/subsets-ii/)  
 和78题相比区别在于输入数组存在相同的元素，为了避免得到重复的结果必须先排序，然后保证同一层相同值得节点只能被选择一次。  
@@ -1741,6 +2199,56 @@ class Solution {
         return dp[0];
     }
 
+}
+```
+#### 92. 反转链表 II
+```java
+public ListNode reverseBetween(ListNode head, int m, int n) {
+    if (head == null) {
+        return null;
+    }
+    int i=1;
+    ListNode pre_m = null;
+    ListNode cur_m = head;
+    ListNode cur_n = head;
+
+    ListNode h = head;
+    ListNode pre = null;
+    while(h!=null){
+        pre = h;
+        h = h.next;
+        i++;
+        if(i==m){
+            cur_m = h;
+            pre_m = pre;
+        }
+        if(i==n){
+            cur_n = h;
+            break;
+        }
+    }
+    ListNode next_n = cur_n.next;
+    cur_n.next = null;
+    reverse(cur_m);//翻转m到n的子链表
+    cur_m.next = next_n;
+    if(pre_m!=null){
+        pre_m.next = cur_n;
+    }else{
+        head = cur_n;//pre_m==null说明cur_m是head节点，此时cur_n才是翻转后的头节点
+    }
+        return head;
+}
+
+public ListNode reverse(ListNode head){
+    ListNode h = head;
+    ListNode pre = null;
+    while(h!=null){
+        ListNode t = h.next;
+        h.next = pre;
+        pre = h;
+        h = t;
+    }
+    return pre;
 }
 ```
 #### 95、不同的二叉搜索树II
@@ -1862,6 +2370,107 @@ class Solution {
     }
   }
 ```
+#### 100. 相同的树
+```java
+public boolean isSameTree(TreeNode p, TreeNode q) {
+  // p and q are both null
+  if (p == null && q == null) return true;
+  // one of p and q is null
+  if (q == null || p == null) return false;
+  if (p.val != q.val) return false;
+  return isSameTree(p.right, q.right) &&
+          isSameTree(p.left, q.left);
+}
+```
+#### 101. 对称二叉树
+```java
+public boolean isSymmetric(TreeNode root) {
+return isMirror(root, root);
+}
+
+public boolean isMirror(TreeNode t1, TreeNode t2) {
+if (t1 == null && t2 == null) return true;
+if (t1 == null || t2 == null) return false;
+return (t1.val == t2.val)
+    && isMirror(t1.right, t2.left)
+    && isMirror(t1.left, t2.right);
+}
+```
+#### 102. 二叉树的层序遍历
+```java
+public List<List<Integer>> levelOrder(TreeNode root) {
+  if(root==null) {
+    return new ArrayList<List<Integer>>();
+  }
+  
+  List<List<Integer>> res = new ArrayList<List<Integer>>();
+  LinkedList<TreeNode> queue = new LinkedList<TreeNode>();
+  //将根节点放入队列中，然后不断遍历队列
+  queue.add(root);
+  while(queue.size()>0) {
+    //获取当前队列的长度，这个长度相当于 当前这一层的节点个数
+    int size = queue.size();
+    ArrayList<Integer> tmp = new ArrayList<Integer>();
+    //将队列中的元素都拿出来(也就是获取这一层的节点)，放到临时list中
+    //如果节点的左/右子树不为空，也放入队列中
+    for(int i=0;i<size;++i) {
+      TreeNode t = queue.remove();
+      tmp.add(t.val);
+      if(t.left!=null) {
+        queue.add(t.left);
+      }
+      if(t.right!=null) {
+        queue.add(t.right);
+      }
+    }
+    //将临时list加入最终返回结果中
+    res.add(tmp);
+  }
+  return res;
+}
+```
+#### 103. 二叉树的锯齿形层次遍历
+```java
+public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+    List<List<Integer>> res = new ArrayList<>();
+    if(root==null) return res;
+    Deque<TreeNode> queue = new LinkedList<>();
+    queue.offer(root);
+    int level = 0;
+    while(!queue.isEmpty()){
+        int size = queue.size();//
+        List<Integer> tmp = new ArrayList<>();
+        for(int i=0;i<size;i++){
+           if(level%2==0){
+               TreeNode node = queue.poll();
+               tmp.add(node.val);
+               if(node.left!=null){
+                   queue.offer(node.left);
+               }
+               if(node.right!=null){
+                   queue.offer(node.right);
+               }
+           }else{
+               TreeNode node = queue.pollLast();
+               tmp.add(node.val);
+               if(node.right!=null){
+                   queue.offerFirst(node.right);
+               }
+               if(node.left!=null){
+                   queue.offerFirst(node.left);
+               }
+           }
+        }
+        res.add(tmp);
+        level++;
+    }
+    return res;
+}
+```
+#### 107. 二叉树的层次遍历 II
+```java
+
+```
 #### 108、 将有序数组转换为二叉搜索树
 [LeetCode](https://leetcode-cn.com/problems/convert-sorted-array-to-binary-search-tree/)  
 时间复杂度：O(N)，每个元素只访问一次。
@@ -1881,6 +2490,49 @@ class Solution {
         root.right=dfs(nums,p+1,high);
         return root;
     }
+}
+```
+109. 有序链表转换二叉搜索树
+```java
+private ListNode findMiddleElement(ListNode head) {
+
+  // The pointer used to disconnect the left half from the mid node.
+  ListNode prevPtr = null;
+  ListNode slowPtr = head;
+  ListNode fastPtr = head;
+
+  // 快慢指针找到中间位置
+  while (fastPtr != null && fastPtr.next != null) {
+    prevPtr = slowPtr;
+    slowPtr = slowPtr.next;
+    fastPtr = fastPtr.next.next;
+  }
+
+  // 断开前后链表
+  if (prevPtr != null) {
+    prevPtr.next = null;
+  }
+
+  return slowPtr;
+}
+
+public TreeNode sortedListToBST(ListNode head) {
+
+  if (head == null) {
+    return null;
+  }
+
+  ListNode mid = this.findMiddleElement(head);
+
+  TreeNode node = new TreeNode(mid.val);
+
+  if (head == mid) {
+    return node;
+  }
+
+  node.left = this.sortedListToBST(head);
+  node.right = this.sortedListToBST(mid.next);
+  return node;
 }
 ```
 #### 110、平衡二叉树
@@ -1946,7 +2598,23 @@ class Solution {
     }
 }
 ```
-
+#### 111. 二叉树的最小深度
+```java
+public int minDepth(TreeNode root) {
+    if(root == null) return 0;
+    //这道题递归条件里分为三种情况
+    //1.左孩子和有孩子都为空的情况，说明到达了叶子节点，直接返回1即可
+    if(root.left == null && root.right == null) return 1;
+    //2.如果左孩子和由孩子其中一个为空，那么需要返回比较大的那个孩子的深度        
+    int m1 = minDepth(root.left);
+    int m2 = minDepth(root.right);
+    //这里其中一个节点为空，说明m1和m2有一个必然为0，所以可以返回m1 + m2 + 1;
+    if(root.left == null || root.right == null) return m1 + m2 + 1;
+    
+    //3.最后一种情况，也就是左右孩子都不为空，返回最小深度+1即可
+    return Math.min(m1,m2) + 1; 
+}
+```
 #### 113、路径总和II
 [LeetCode](https://leetcode-cn.com/problems/path-sum-ii/submissions/)  
 先序遍历二叉树，当前是叶子节点时判断累积的节点总和是否等于目标值，如果是的话添加到结果集中。递归过程中用tmp保存经过的每一个节点，所以结束递归的时候记得重置，否则会造成重复错误。因为sum是int类型的所以无需重置，若sum不是int类型的话，不仅tmp要重置状态，sum也要重置状态。这里所说的重置状态就是恢复父节点传下来的值(回溯思想)。  
@@ -2068,6 +2736,32 @@ class Solution {
         dfs(root.left, root.right);
         return root;
     }
+}
+```
+#### 118. 杨辉三角
+```java
+public List<List<Integer>> generate(int numRows) {
+    List<List<Integer>> res = new ArrayList<>();
+
+    if(numRows==0){
+        return res;
+    }
+
+    List<Integer> firstRow = new ArrayList<>();
+    firstRow.add(1);
+    res.add(firstRow);
+    for(int i=1;i<numRows;i++){
+        List<Integer> t = new ArrayList<>();
+        List<Integer> preRow = res.get(i-1);
+        t.add(1);
+        for(int j=1;j<i;j++){
+            t.add(preRow.get(j-1)+preRow.get(j));
+        }
+        t.add(1);
+        res.add(t);
+    }
+
+    return res;
 }
 ```
 #### 122、买卖股票的最佳时期  
